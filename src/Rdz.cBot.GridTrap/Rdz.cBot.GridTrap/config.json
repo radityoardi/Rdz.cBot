@@ -1,0 +1,24 @@
+{
+  "EntryParameters": {
+    "EntryMode": "Volume",
+    "TickVolumeThreshold": {
+      "Max": 50,
+      "Min": 0
+    }
+  },
+  "ClosureParameters": {
+    "ClosureMode": "Fixed",
+    "Fixed": {
+      "TakeProfit": 1
+    } 
+  },
+  "GridParameters": {
+    "OrderType": "STOP",
+    "Size": 5,
+    "LotSize": 5000,
+    "Intervals": {
+      "Grid": 50,
+      "Starting": 70
+    }
+  }
+}

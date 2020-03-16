@@ -64,6 +64,19 @@
     <None Include="config.json" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Rdz.cBot.Library\Rdz.cBot.Library.csproj">
+      <Project>{5642e84d-0d26-4428-b4a1-e286c3a3672b}</Project>
+      <Name>Rdz.cBot.Library</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Rdz.Indi.BollingerBandDistance\Rdz.Indi.BollingerBandDistance\Rdz.Indi.BollingerBandDistance.csproj">
+      <Project>{693d2eaa-8230-4e2f-9a7d-679e66993181}</Project>
+      <Name>Rdz.Indi.BollingerBandDistance</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Configurations\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

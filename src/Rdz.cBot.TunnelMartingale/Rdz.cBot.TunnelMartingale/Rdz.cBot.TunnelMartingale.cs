@@ -16,20 +16,19 @@ namespace Rdz.cBot
     [Robot(TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
 	public class TunnelMartingaleBot : RdzRobot, IRdzRobot
 	{
-		[Parameter("Configuration Path", DefaultValue = @"%USERPROFILE%\Documents\Rdz.cBot.TunnelMartingale\configuration.json")]
-		public string ConfigurationFilePath { get; set; }
+#if DEBUG
+		[Parameter("Configuration Path", DefaultValue = @"%USERPROFILE%\Documents\GitHub\RADITYO\Rdz.cBot\src\Rdz.cBot.TunnelMartingale\Rdz.cBot.TunnelMartingale\Configuration\config.json")]
+		
+#else
+		[Parameter("Configuration Path", DefaultValue = @"%USERPROFILE%\Documents\Rdz.cBot.TunnelMartingale\config.json")]
+
+#endif
+		public override string ConfigurationFilePath { get; set; }
 		[Parameter("Auto-refresh", DefaultValue = false)]
-		public bool AutoRefreshConfiguration { get; set; }
+		public override bool AutoRefreshConfiguration { get; set; }
 
 		internal TunnelMartingaleConfiguration config { get; set; }
 		internal Tunnel tm { get; set; }
-		internal string ExpandedConfigFilePath {
-			get
-			{
-				return Environment.ExpandEnvironmentVariables(ConfigurationFilePath);
-			}
-		}
-
 
 
 		protected override void OnStart()
@@ -50,7 +49,7 @@ namespace Rdz.cBot
 			if (tm != null) tm.TickCheck();
         }
 
-        protected override void OnStop()
+		protected override void OnStop()
         {
 			// Put your deinitialization logic here
 			if (tm != null)

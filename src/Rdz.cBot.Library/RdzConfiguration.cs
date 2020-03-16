@@ -1,25 +1,16 @@
-﻿using System;
+﻿using Rdz.cBot.Library.Extensions;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using cAlgo;
-using cAlgo.API;
-using Rdz.cBot.Library.Extensions;
-using System.IO;
-using Newtonsoft.Json;
-using Rdz.cBot.Library.Chart;
 
 namespace Rdz.cBot.Library
 {
-	public class RdzRobot : Robot, IRdzRobot
+	public class RdzConfiguration
 	{
-		public virtual string ConfigurationFilePath { get; set; }
-		public virtual bool AutoRefreshConfiguration { get; set; }
-
-		public string ExpandedConfigFilePath { get { return Environment.ExpandEnvironmentVariables(ConfigurationFilePath); } }
-
-		protected bool IsConfigurationFolderPrepared(string ConfigurationFilePath, bool AutoCreate = false)
+		public static bool IsConfigurationFolderPrepared(string ConfigurationFilePath, bool AutoCreate = false)
 		{
 			ConfigurationFilePath = Environment.ExpandEnvironmentVariables(ConfigurationFilePath);
 			if (ConfigurationFilePath.IsNotEmpty())
@@ -37,7 +28,8 @@ namespace Rdz.cBot.Library
 			}
 			return false;
 		}
-		protected T LoadConfiguration<T>(string expandedFilePath)
+
+		public static T LoadConfiguration<T>(string expandedFilePath)
 		{
 			if (IsConfigurationFolderPrepared(expandedFilePath))
 			{
@@ -46,12 +38,12 @@ namespace Rdz.cBot.Library
 					string fileContent = File.ReadAllText(expandedFilePath);
 					return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(fileContent);
 				}
+				else
+				{
+					throw new FileNotFoundException(String.Format("File '{0}' is not found!", expandedFilePath));
+				}
 			}
 			return default(T);
-		}
-		protected string ExpandConfigFilePath(string ConfigurationFilePath)
-		{
-			return Environment.ExpandEnvironmentVariables(ConfigurationFilePath);
 		}
 	}
 }

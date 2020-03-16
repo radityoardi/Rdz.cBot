@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace Rdz.cBot.Library
 {
+	public enum enCodeType
+	{
+		Robot,
+		Indicator
+	}
 	public enum enDirection
 	{
 		/// <summary>
@@ -20,5 +25,24 @@ namespace Rdz.cBot.Library
 		/// Neutral is where the open and close value are exactly the same.
 		/// </summary>
 		Neutral
+	}
+
+	public enum enCandlestickPart
+	{
+		All,
+		RealBody,
+		UpperShadow,
+		LowerShadow,
+		High,
+		Low,
+		RealBodyHigh,
+		RealBodyLow
+	}
+
+	public enum enRecommendation
+	{
+		None,
+		Buy,
+		Sell
 	}
 }

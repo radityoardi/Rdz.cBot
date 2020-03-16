@@ -6,45 +6,62 @@ using System.Threading.Tasks;
 
 namespace Rdz.cBot.GridTrap
 {
-    internal enum EntryMode
+	public enum FallbackClosureMode
+	{
+		Disabled,
+		MaxDuration
+	}
+	public enum LotSizeMode
+	{
+		Fixed,
+		PercentageFromBalance
+	}
+	public enum DateTimeMode
+	{
+		Local,
+		UTC
+	}
+    public enum EntryMode
     {
         Volume,
-        Continuous
+        Continuous,
+		TimeRangeOfTheDay,
+		BollingerBandsDistance
     }
-    internal enum GridSide
+    public enum GridSide
     {
         Undefined,
         UpperGround,
         UnderGround
     }
-    internal enum RuntimeStatus
+    public enum RuntimeStatus
     {
         Inactive,
         Active
     }
-    internal enum OrderType
+    public enum OrderType
     {
         STOP,
         LIMIT
     }
-    internal enum ClosureMode
+    public enum ClosureMode
     {
         Fixed,
         Dynamic
     }
-    internal enum TradeStatus
+    public enum TradeStatus
     {
         Inactive,
         Pending,
         Active
     }
-    internal enum GridLotSizeMode
+    public enum GridLotSizeMode
     {
         Fixed,
         Multiplier,
         Fibonacci
     }
-    internal enum GridIntervalMode
+    public enum GridIntervalMode
     {
         Fixed,
         Fibonacci

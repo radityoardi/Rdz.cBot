@@ -1,51 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using cAlgo.API;
 using Newtonsoft.Json;
+using Rdz.cBot.Library;
 
 namespace Rdz.cBot.GridTrap.Schema
 {
-    internal class Configuration
+    public class Configuration : RdzConfiguration
     {
 
-        internal EntryParameters EntryParameters { get; set; }
-        internal ClosureParameters ClosureParameters { get; set; }
-        internal GridParameters GridParameters { get; set; }
+        public EntryParameters EntryParameters { get; set; }
+        public ClosureParameters ClosureParameters { get; set; }
+        public GridParameters GridParameters { get; set; }
     }
 
-    internal class GridParameters
+    public class GridParameters
     {
-        internal OrderType OrderType { get; set; }
-        internal double Size { get; set; }
-        internal double LotSize { get; set; }
-        internal Intervals Intervals { get; set; }
+        public OrderType OrderType { get; set; }
+        public double Size { get; set; }
+        public double LotSize { get; set; }
+        public Intervals Intervals { get; set; }
     }
 
-    internal class Intervals
+    public class Intervals
     {
-        internal int Grid { get; set; }
-        internal int Starting { get; set; }
+        public int Grid { get; set; }
+        public int Starting { get; set; }
     }
 
-    internal class EntryParameters
+    public class EntryParameters
     {
-        internal EntryMode EntryMode { get; set; }
-        internal TickVolumeThreshold TickVolumeThreshold { get; set; }
+        public EntryMode EntryMode { get; set; }
+        public TickVolumeThreshold TickVolumeThreshold { get; set; }
+		public TimeOfTheDayParameters TimeOfTheDay { get; set; }
+		public BollingerBandsDistanceParameters BBDistance { get; set; }
+		public TradingDateParameters NoTradingDateParameter { get; set; }
     }
-    internal class TickVolumeThreshold
+    public class TickVolumeThreshold
     {
-        internal double Max { get; set; }
-        internal double Min { get; set; }
+        public double Max { get; set; }
+        public double Min { get; set; }
     }
-    internal class ClosureParameters
+	public class TimeOfTheDayParameters
+	{
+		public DateTimeMode TimeMode { get; set; }
+		[JsonIgnore]
+		public TimeSpan StartTimeSpan { get { return TimeSpan.Parse(this.StartTime); } }
+		public string StartTime { get; set; }
+		[JsonIgnore]
+		public TimeSpan EndTimeSpan { get { return TimeSpan.Parse(this.EndTime); } }
+		public string EndTime { get; set; }
+		public int MaximumCycle { get; set; }
+	}
+
+	public class BollingerBandsDistanceParameters
+	{
+		public BollingerBandsDistanceParameters()
+		{
+			MaType = MovingAverageType.Simple;
+			StandardDeviation = 2;
+			Periods = 14;
+			BBDistanceThreshold = 50;
+			BBDistancePeriods = 3;
+		}
+		[DefaultValue(MovingAverageType.Exponential)]
+		public MovingAverageType MaType { get; set; }
+		public int StandardDeviation { get; set; }
+
+		public int Periods { get; set; }
+		public int BBDistanceThreshold { get; set; }
+		public int BBDistancePeriods { get; set; }
+	}
+	public class ClosureParameters
     {
-        internal ClosureMode ClosureMode { get; set; }
-        internal ClosureModeFixed Fixed { get; set; }
-    }
-    internal class ClosureModeFixed
+        public ClosureMode ClosureMode { get; set; }
+        public ClosureModeFixed Fixed { get; set; }
+		public FallbackClosureMode FallbackClosureMode { get; set; }
+		[JsonIgnore]
+		public TimeSpan MaxDurationSpan { get { return TimeSpan.Parse(this.MaxDuration); } }
+		public string MaxDuration { get; set; }
+	}
+
+	public class TradingDateParameters
+	{
+
+	}
+	public class ClosureModeFixed
     {
-        internal double TakeProfit { get; set; }
+        public double TakeProfit { get; set; }
     }
 }

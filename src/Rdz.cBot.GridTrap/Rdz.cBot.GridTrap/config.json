@@ -1,24 +1,37 @@
 {
-  "EntryParameters": {
-    "EntryMode": "Volume",
-    "TickVolumeThreshold": {
-      "Max": 50,
-      "Min": 0
-    }
-  },
-  "ClosureParameters": {
-    "ClosureMode": "Fixed",
-    "Fixed": {
-      "TakeProfit": 1
-    } 
-  },
+	"EntryParameters": {
+		"EntryMode": "BollingerBandsDistance",
+		"TickVolumeThreshold": {
+			"Max": 250,
+			"Min": 0
+		},
+		"TimeOfTheDay": {
+			"TimeMode": "Local",
+			"StartTime": "06:00:00",
+			"EndTime": "11:00:00",
+			"MaximumCycle": 1
+		},
+		"BBDistance": {
+			"MaType": "Exponential",
+			"BBDistanceThreshold": 60,
+			"BBDistancePeriods": 3
+		}
+	},
+	"ClosureParameters": {
+		"ClosureMode": "Fixed",
+		"FallbackClosureMode": "Disabled",
+		"MaxDuration": "20:00:00",
+		"Fixed": {
+			"TakeProfit": 25
+		}
+	},
   "GridParameters": {
     "OrderType": "STOP",
-    "Size": 5,
-    "LotSize": 5000,
+    "Size": 30,
+    "LotSize": 1000,
     "Intervals": {
-      "Grid": 50,
-      "Starting": 70
+      "Grid": 40,
+      "Starting": 50
     }
   }
 }

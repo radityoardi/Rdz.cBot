@@ -21,7 +21,7 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 		public string CultureParser { get; set; }
 		public string SymbolName { get; set; }
 		public enSessionMode SessionMode { get; set; }
-		public int MaxTrades { get; set; }
+		public int MaxCyclePerSession { get; set; }
 	}
 	public class SessionInfo
 	{

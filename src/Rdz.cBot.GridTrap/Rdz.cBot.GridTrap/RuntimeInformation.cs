@@ -95,14 +95,14 @@ namespace Rdz.cBot.GridTrap
         public void Reset()
         {
             Grids.Clear();
-            OriginalAsk = OriginalBid = UpperGroundStartingPoint = UnderGroundStartingPoint = TotalNetProfit = GridSize = 0;
+            OriginalAsk = OriginalBid = UpperGroundStartingPoint = UnderGroundStartingPoint = TotalNetProfit = GridSize = RunningCycle = 0;
             Active = false;
         }
 
         internal GridTrapBot robot { get; set; }
         internal Configuration c { get; set; }
 
-        internal EntryMode EntryMode { get; set; }
+        //internal EntryMode EntryMode { get; set; }
 
         internal RuntimeStatus Status { get; set; }
         internal List<Grid> Grids { get; set; }
@@ -116,7 +116,18 @@ namespace Rdz.cBot.GridTrap
         internal int GridSize { get; private set; }
 
         internal bool Active { get; private set; }
+		internal int RunningCycle { get; private set; }
+		internal DateTime ActiveSince { get; private set; }
         internal double TotalNetProfit { get; private set; }
+
+		internal void InitializeCycle()
+		{
+			RunningCycle += 1;
+		}
+		internal void ResetCycle()
+		{
+			RunningCycle = 0;
+		}
 
         internal void InitializeGrids()
         {
@@ -129,6 +140,7 @@ namespace Rdz.cBot.GridTrap
             OriginalBid = robot.Symbol.Bid;
 
             Grids.Clear();
+			ActiveSince = robot.Time;
 
             UpperGroundStartingPoint = robot.ShiftPrice(OriginalAsk, (int)c.GridParameters.Intervals.Starting);
             UnderGroundStartingPoint = robot.ShiftPrice(OriginalBid, -Math.Abs((int)c.GridParameters.Intervals.Starting));
@@ -138,7 +150,7 @@ namespace Rdz.cBot.GridTrap
             for (int i = 0; i < GridSize; i++)
             {
                 LastUpperEstimatedPricing = i == 0 ? UpperGroundStartingPoint : robot.ShiftPrice(LastUpperEstimatedPricing, Math.Abs((int)c.GridParameters.Intervals.Grid));
-                robot.Print("EstimatedPricing-Upper: {0} at {1}", LastUpperEstimatedPricing.ToString(), i.ToString());
+                //robot.Print("EstimatedPricing-Upper: {0} at {1}", LastUpperEstimatedPricing.ToString(), i.ToString());
                 var UpperGrid = new Grid()
                 {
                     Side = GridSide.UpperGround,
@@ -150,7 +162,7 @@ namespace Rdz.cBot.GridTrap
                 Grids.Add(UpperGrid);
 
                 LastUnderEstimatedPricing = i == 0 ? UnderGroundStartingPoint : robot.ShiftPrice(LastUnderEstimatedPricing, -Math.Abs((int)c.GridParameters.Intervals.Grid));
-                robot.Print("EstimatedPricing-Under: {0} at {1}", LastUnderEstimatedPricing.ToString(), i.ToString());
+                //robot.Print("EstimatedPricing-Under: {0} at {1}", LastUnderEstimatedPricing.ToString(), i.ToString());
                 var UnderGrid = new Grid()
                 {
                     Side = GridSide.UnderGround,
@@ -168,15 +180,22 @@ namespace Rdz.cBot.GridTrap
         {
             for (int i = 0; i < Grids.Count; i++)
             {
-                robot.Print("Executing: {0}({2}-{3}) at {1}", Grids[i].EstimatedPricing.ToString(), Grids[i].SideIndex.ToString(), Grids[i].OrderType.ToString(), Grids[i].Side.ToString());
+                //robot.Print("Executing: {0}({2}-{3}) at {1}", Grids[i].EstimatedPricing.ToString(), Grids[i].SideIndex.ToString(), Grids[i].OrderType.ToString(), Grids[i].Side.ToString());
                 Grids[i].PlaceOrder(robot);
                 Active = true;
             }
         }
+		internal void EnsureAllClosed()
+		{
+			if (Active && robot.PendingOrders.Count + robot.Positions.Count < GridSize)
+			{
+				CloseCycle();
+			}
+		}
         internal void AnalyzeConditionalClosure()
         {
             TotalNetProfit = Grids.Where(x => x.Status == TradeStatus.Active).Select(x => x.RobotPosition.NetProfit).Sum();
-            ClosureMode closureMode = ClosureMode.Fixed;
+			ClosureMode closureMode = c.ClosureParameters.ClosureMode;
 
             if (closureMode == ClosureMode.Fixed)
             {
@@ -185,25 +204,30 @@ namespace Rdz.cBot.GridTrap
                         Grids.Where(x => x.Status == TradeStatus.Active && x.Side == GridSide.UpperGround).Count(),
                         Grids.Where(x => x.Status == TradeStatus.Active && x.Side == GridSide.UnderGround).Count()
                     }).All(x => x == GridSize) && c.GridParameters.OrderType == OrderType.STOP;
+				var IsPassingMaxDuration = c.ClosureParameters.FallbackClosureMode == FallbackClosureMode.MaxDuration && robot.Time.ToLocalTime() > ActiveSince.ToLocalTime().Add(c.ClosureParameters.MaxDurationSpan);
 
-                if (ClosureCondition1 || ClosureCondition2)
+                if (ClosureCondition1 || ClosureCondition2 || IsPassingMaxDuration)
                 {
-                    //close all positions
-                    Grids.Where(x => x.Status == TradeStatus.Active).All(x =>
-                    {
-                        robot.ClosePositionAsync(x.RobotPosition, PositionClosed);
-                        return true;
-                    });
-                    //close all pending orders
-                    Grids.Where(x => x.Status == TradeStatus.Pending).All(x =>
-                    {
-                        robot.CancelPendingOrderAsync(x.RobotPendingOrder, PendingOrderCancelled);
-                        return true;
-                    });
+					CloseCycle();
                 }
             }
         }
-        internal void PendingOrderCancelled(TradeResult tradeResult)
+		internal void CloseCycle()
+		{
+			//close all positions
+			Grids.Where(x => x.Status == TradeStatus.Active).OrderBy(x => x.RobotPosition.NetProfit).All(x =>
+			{
+				robot.ClosePositionAsync(x.RobotPosition, PositionClosed);
+				return true;
+			});
+			//close all pending orders
+			Grids.Where(x => x.Status == TradeStatus.Pending).All(x =>
+			{
+				robot.CancelPendingOrderAsync(x.RobotPendingOrder, PendingOrderCancelled);
+				return true;
+			});
+		}
+		internal void PendingOrderCancelled(TradeResult tradeResult)
         {
             if (tradeResult.IsSuccessful)
             {

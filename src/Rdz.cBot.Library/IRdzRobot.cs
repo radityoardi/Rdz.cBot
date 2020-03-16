@@ -11,5 +11,7 @@ namespace Rdz.cBot.Library
 	{
 		string ConfigurationFilePath { get; set; }
 		bool AutoRefreshConfiguration { get; set; }
+
+		string ExpandedConfigFilePath { get; }
 	}
 }

@@ -10,7 +10,8 @@ namespace Rdz.cBot.TunnelMartingale
 		AlwaysBuy,
 		AlwaysSell,
 		Random,
-		RememberLastProfitable
+		RememberLastProfitable,
+		Trap
 	}
 	public enum enTunnelStatus
 	{

@@ -88,6 +88,22 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		public double HighToCloseHeight
+		{
+			get
+			{
+				return Math.Round(this.High - this.Close, Digits);
+			}
+		}
+
+		public double CloseToLowHeight
+		{
+			get
+			{
+				return Math.Round(this.Close - this.Low, Digits);
+			}
+		}
+
 		public bool HasUpperShadow
 		{
 			get
@@ -163,6 +179,100 @@ namespace Rdz.cBot.Library.Chart
 		public bool Same(Candlestick comparer)
 		{
 			return (comparer != null && this.High == comparer.High && this.Low == comparer.Low && this.Open == comparer.Open && this.Close == comparer.Close && this.OpenTime == comparer.OpenTime);
+		}
+
+		public bool IsAbove(double price)
+		{
+			return IsAbove(price, enCandlestickPart.All);
+		}
+		public bool IsAbove(double price, enCandlestickPart part)
+		{
+			if (part == enCandlestickPart.All || part == enCandlestickPart.Low || part == enCandlestickPart.LowerShadow)
+			{
+				return Low > price;
+			}
+			else if (part == enCandlestickPart.High)
+			{
+				return High > price;
+			}
+			else if (part == enCandlestickPart.RealBodyLow || part == enCandlestickPart.RealBody)
+			{
+				return RealBodyLow > price;
+			}
+			else if (part == enCandlestickPart.RealBodyHigh || part == enCandlestickPart.UpperShadow)
+			{
+				return RealBodyHigh > price;
+			}
+			return false;
+		}
+		public bool IsBelow(double price)
+		{
+			return IsBelow(price, enCandlestickPart.All);
+		}
+		public bool IsBelow(double price, enCandlestickPart part)
+		{
+			if (part == enCandlestickPart.All || part == enCandlestickPart.High || part == enCandlestickPart.UpperShadow)
+			{
+				return High < price;
+			}
+			else if (part == enCandlestickPart.Low)
+			{
+				return Low < price;
+			}
+			else if (part == enCandlestickPart.RealBodyLow || part == enCandlestickPart.LowerShadow)
+			{
+				return RealBodyLow < price;
+			}
+			else if (part == enCandlestickPart.RealBodyHigh || part == enCandlestickPart.RealBody)
+			{
+				return RealBodyHigh < price;
+			}
+			return false;
+		}
+
+		public bool IsBetween(double price1, double price2)
+		{
+			return IsBetween(price1, price2, enCandlestickPart.All);
+		}
+		public bool IsBetween(double price1, double price2, enCandlestickPart part)
+		{
+			double UpperPrice = price1 > price2 ? price1 : price2;
+			double LowerPrice = price2 < price1 ? price2 : price1;
+			bool IsUpperLowerSame = UpperPrice == LowerPrice;
+
+			if (part == enCandlestickPart.All)
+			{
+				return High < UpperPrice && Low > LowerPrice;
+			}
+			else if (part == enCandlestickPart.High)
+			{
+				return High < UpperPrice && High > LowerPrice;
+			}
+			else if (part == enCandlestickPart.Low)
+			{
+				return Low < UpperPrice && Low > LowerPrice;
+			}
+			else if (part == enCandlestickPart.LowerShadow)
+			{
+				return RealBodyLow < UpperPrice && Low > LowerPrice;
+			}
+			else if (part == enCandlestickPart.UpperShadow)
+			{
+				return High < UpperPrice && RealBodyHigh > LowerPrice;
+			}
+			else if (part == enCandlestickPart.RealBody)
+			{
+				return RealBodyHigh < UpperPrice && RealBodyLow > LowerPrice;
+			}
+			else if (part == enCandlestickPart.RealBodyHigh)
+			{
+				return RealBodyHigh < UpperPrice && RealBodyHigh > LowerPrice;
+			}
+			else if (part == enCandlestickPart.RealBodyLow)
+			{
+				return RealBodyLow < UpperPrice && RealBodyLow > LowerPrice;
+			}
+			return false;
 		}
 	}
 }

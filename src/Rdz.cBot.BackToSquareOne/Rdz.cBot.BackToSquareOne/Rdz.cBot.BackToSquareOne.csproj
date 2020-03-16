@@ -50,6 +50,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BotRecommendation.cs" />
+    <Compile Include="DataSeriesExtensions.cs" />
+    <Compile Include="Enum.cs" />
+    <Compile Include="RapidScalpingInfo.cs" />
     <Compile Include="Rdz.cBot.BackToSquareOne.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

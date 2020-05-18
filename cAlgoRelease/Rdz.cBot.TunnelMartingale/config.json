@@ -1,0 +1,24 @@
+{
+  "OpenCycleMethod": "Trap",
+  "RunningCycleMethod": "NormalSmartBucket",
+  "TunnelHeight": 200,
+  "StartingLotSize": 0.5,
+  "LotMultiplier": 2,
+  "Target": {
+    "TargetType": "FixedTargetProfit",
+    "FixedTargetProfit": 25
+  },
+  "CloseAllOrdersOnStop": true,
+  "LastDirectionTrailingHeight": 10,
+  "SessionDates": {
+    "Enabled": true,
+    "ParseFormat": "d MMM yyyy HH:mm:ss",
+    "Interval": "0.00:05:00",
+    "MaxCyclePerSession": 1,
+    "Sessions": [
+      {
+        "Date": "08 May 2020 22:00:00"
+      }
+    ]
+  }
+}

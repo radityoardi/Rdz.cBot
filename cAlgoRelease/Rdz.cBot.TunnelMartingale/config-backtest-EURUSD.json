@@ -1,0 +1,42 @@
+{
+  "OpenCycleMethod": "Trap",
+  "RunningCycleMethod": "Normal",
+  "TunnelHeight": 200,
+  "StartingLotSize": 0.5,
+  "LotMultiplier": 2,
+  "Target": {
+    "TargetType": "FixedTargetProfit",
+    "FixedTargetProfit": 25,
+    "EnableTargetProfit": false,
+    "EnableStopLoss": false,
+    "FixedStopLoss": -5
+  },
+  "CloseAllOrdersOnStop": true,
+  "LastDirectionTrailingHeight": 10,
+  "SessionDates": {
+    "Enabled": true,
+    "ParseFormat": "d MMM yyyy HH:mm:ss",
+    "Interval": "0.00:05:00",
+    "MaxCyclePerSession": 1,
+    "Sessions": [
+      {
+        "Date": "02 Apr 2020 14:00:00"
+      },
+      {
+        "Date": "02 Apr 2020 20:30:00"
+      },
+      {
+        "Date": "03 Apr 2020 14:00:00"
+      },
+      {
+        "Date": "03 Apr 2020 20:30:00"
+      },
+      {
+        "Date": "09 Apr 2020 20:30:00"
+      },
+      {
+        "Date": "08 May 2020 22:00:00"
+      }
+    ]
+  }
+}

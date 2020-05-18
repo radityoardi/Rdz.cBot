@@ -46,8 +46,11 @@ namespace Rdz.cBot.Library
 					string fileContent = File.ReadAllText(expandedFilePath);
 					return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(fileContent);
 				}
+				else
+					throw new FileNotFoundException("File '" + expandedFilePath + "' could not be found.");
 			}
-			return default(T);
+			else
+				throw new FileNotFoundException("Folder for file '" + expandedFilePath + "' could not be found.");
 		}
 		protected string ExpandConfigFilePath(string ConfigurationFilePath)
 		{

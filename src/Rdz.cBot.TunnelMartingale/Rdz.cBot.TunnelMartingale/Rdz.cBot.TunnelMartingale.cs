@@ -17,8 +17,7 @@ namespace Rdz.cBot
 	public class TunnelMartingaleBot : RdzRobot, IRdzRobot
 	{
 #if DEBUG
-		[Parameter("Configuration Path", DefaultValue = @"%USERPROFILE%\Documents\GitHub\RADITYO\Rdz.cBot\src\Rdz.cBot.TunnelMartingale\Rdz.cBot.TunnelMartingale\Configuration\config.json")]
-		
+		[Parameter("Configuration Path", DefaultValue = @"%USERPROFILE%\Documents\Git\radityoardi\Rdz.cBot\src\Rdz.cBot.TunnelMartingale\Rdz.cBot.TunnelMartingale\Configuration\config.json")]
 #else
 		[Parameter("Configuration Path", DefaultValue = @"%USERPROFILE%\Documents\Rdz.cBot.TunnelMartingale\config.json")]
 

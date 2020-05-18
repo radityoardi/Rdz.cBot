@@ -1,170 +1,24 @@
 {
-	"OpenCycleMethod": "Trap",
-	"TunnelHeight": 200,
-	"StartingLotSize": 0.01,
-	"LotMultiplier": 2,
-	"FixedTargetProfit": 0.1,
-	"CloseAllOrdersOnStop": true,
-	"SessionDates": {
-		"Enabled": false,
-		"ParseFormat": "d MMM yyyy HH:mm:ss",
-		"Interval": "0.00:05:00",
-		"MaxCyclePerSession": 1,
-		"Sessions": [
-			{
-				"Date": "03 Sep 2019 22:00:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "05 Sep 2019 20:15:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "06 Sep 2019 20:45:00",
-				"Enabled": true,
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "13 Sep 2019 20:30:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "19 Sep 2019 02:00:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "26 Sep 2019 22:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "27 Sep 2019 20:30:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "24 Sep 2019 12:00:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "23 Sep 2019 15:30:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "04 Oct 2019 20:45:00",
-				"Enabled": true,
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "08 Oct 2019 01:30:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "08 Oct 2019 20:30:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "09 Oct 2019 03:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "09 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "10 Oct 2019 02:30:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "10 Oct 2019 20:30:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "11 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "15 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "16 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell",
-				"Enabled": false
-			},
-			{
-				"Date": "16 Oct 2019 20:30:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "17 Oct 2019 13:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "17 Oct 2019 23:00:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "18 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "22 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "23 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "24 Oct 2019 15:30:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "24 Oct 2019 20:30:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "25 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "29 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "29 Oct 2019 22:00:00",
-				"SessionTradeType": "Buy"
-			},
-			{
-				"Date": "30 Oct 2019 20:30:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "31 Oct 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "01 Nov 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "01 Nov 2019 20:45:00",
-				"Enabled": true,
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "05 Nov 2019 14:00:00",
-				"TargetType": "FixedTargetProfit",
-				"FixedTargetProfit": 2,
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "06 Nov 2019 14:00:00",
-				"SessionTradeType": "Sell"
-			},
-			{
-				"Date": "07 Nov 2019 19:00:00",
-				"SessionTradeType": "Sell"
-			}
-		]
-	}
+  "OpenCycleMethod": "Trap",
+  "RunningCycleMethod": "NormalSmartBucket",
+  "TunnelHeight": 200,
+  "StartingLotSize": 0.5,
+  "LotMultiplier": 2,
+  "Target": {
+    "TargetType": "FixedTargetProfit",
+    "FixedTargetProfit": 25
+  },
+  "CloseAllOrdersOnStop": true,
+  "LastDirectionTrailingHeight": 10,
+  "SessionDates": {
+    "Enabled": true,
+    "ParseFormat": "d MMM yyyy HH:mm:ss",
+    "Interval": "0.00:05:00",
+    "MaxCyclePerSession": 1,
+    "Sessions": [
+      {
+        "Date": "08 May 2020 22:00:00"
+      }
+    ]
+  }
 }

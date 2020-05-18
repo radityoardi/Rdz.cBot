@@ -13,6 +13,18 @@ namespace Rdz.cBot.TunnelMartingale
 		RememberLastProfitable,
 		Trap
 	}
+	public enum enRunningCycleMethod
+	{
+		Normal,
+		TrailingStop,
+		NormalSmartBucket,
+		MartingaleSmartBucket
+	}
+	public enum enProfitCalculation
+	{
+		Normal,
+		WithLossBucket
+	}
 	public enum enTunnelStatus
 	{
 		Inactive,

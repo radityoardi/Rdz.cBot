@@ -9,6 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rdz.cBot.Library", "..\Rdz.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rdz.Indi.BollingerBandDistance", "..\Rdz.Indi.BollingerBandDistance\Rdz.Indi.BollingerBandDistance\Rdz.Indi.BollingerBandDistance.csproj", "{693D2EAA-8230-4E2F-9A7D-679E66993181}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5D06D080-2381-4071-9E5F-CC813A09464F}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -29,7 +29,7 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 		{
 			Enabled = true;
 			SymbolRetrieval = enSymbolRetrieval.UseChart;
-			TargetType = enSessionTargetType.FollowParent;
+			Target = new SessionTargetInfo();
 		}
 		public string Date { get; set; }
 		[JsonIgnore]
@@ -37,31 +37,62 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 		public TradeType SessionTradeType { get; set; }
 		public enSymbolRetrieval SymbolRetrieval { get; set; }
 		public string SymbolName { get; set; }
-		public enSessionTargetType TargetType { get; set; }
 		public bool Enabled { get; set; }
+		public SessionTargetInfo Target { get; set; }
+	}
+
+	public abstract class TargetInfo
+	{
+		public TargetInfo()
+		{
+			EnableStopLoss = false;
+			EnableTargetProfit = true;
+			FixedStopLoss = 0;
+		}
 		public double FixedTargetProfit { get; set; }
 		public double FixedTargetPoints { get; set; }
+		public double FixedStopLoss { get; set; }
+		public bool EnableTargetProfit { get; set; }
+		public bool EnableStopLoss { get; set; }
 	}
+
+	public class GlobalTargetInfo : TargetInfo
+	{
+		public GlobalTargetInfo() : base()
+		{
+			TargetType = enTargetType.FixedTargetProfit;
+		}
+		public enTargetType TargetType { get; set; }
+	}
+	public class SessionTargetInfo : TargetInfo
+	{
+		public SessionTargetInfo() : base()
+		{
+			TargetType = enSessionTargetType.FollowParent;
+		}
+		public enSessionTargetType TargetType { get; set; }
+	}
+
 	public class TunnelMartingaleConfiguration
 	{
 		public TunnelMartingaleConfiguration()
 		{
 			SessionDates = new SessionDatesConfig();
+			Target = new GlobalTargetInfo();
 			CloseAllOrdersOnStop = true;
-			TargetType = enTargetType.FixedTargetProfit;
 			LevelTargetProfits = new List<double>();
+			OpenCycleMethod = enOpenCycleMethod.Trap;
+			RunningCycleMethod = enRunningCycleMethod.Normal;
 		}
 		public enOpenCycleMethod OpenCycleMethod { get; set; }
+		public enRunningCycleMethod RunningCycleMethod { get; set; }
 		public int TunnelHeight { get; set; }
 		public double StartingLotSize { get; set; }
 		public double LotMultiplier { get; set; }
 		public List<double> LevelTargetProfits { get; set; }
 
-		public double FixedTargetProfit { get; set; }
-		public double FixedTargetPoints { get; set; }
-		public double FixedStopLoss { get; set; }
 		public bool CloseAllOrdersOnStop { get; set; }
-		public enTargetType TargetType { get; set; }
+		public GlobalTargetInfo Target { get; set; }
 
 		public SessionDatesConfig SessionDates { get; set; }
 		public string Key { get; set; }

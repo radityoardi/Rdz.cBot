@@ -17,24 +17,23 @@ namespace Rdz.cBot.Scp
 		[Parameter("High Frequency Mode", DefaultValue = false)]
 		public bool IsHighFreqMode { get; set; }
 
-		[Parameter("Trigger Candle Ratio", DefaultValue = 3.0)]
-		public double TriggerCandleRatio { get; set; }
+		[Parameter("Trigger Height Ratio", DefaultValue = 2.5)]
+		public double TriggerHeightRatio { get; set; }
 		[Parameter("Trigger High-Low Ratio", DefaultValue = 2.0)]
 		public double TriggerHLRatio { get; set; }
-		[Parameter("Trigger High-Close Ratio", DefaultValue = 2.0)]
-		public double TriggerHCRatio { get; set; }
 		[Parameter("Volume", DefaultValue = 1000)]
 		public int Volume { get; set; }
 
 		[Parameter("Stop Loss in Pips", DefaultValue = 0)]
 		public double StopLossPips { get; set; }
-		[Parameter("Take Profit in Pips", DefaultValue = 0)]
+		[Parameter("Take Profit in Pips", DefaultValue = 10)]
 		public double TakeProfitPips { get; set; }
 
 		private Candlestick cs1 { get; set; }
 		private Candlestick cs2 { get; set; }
+		private Candlestick cs3 { get; set; }
 
-        protected override void OnStart()
+		protected override void OnStart()
         {
             // Put your initialization logic here
         }
@@ -46,16 +45,29 @@ namespace Rdz.cBot.Scp
 		protected override void OnBar()
 		{
 			// Put your core logic here
-			cs1 = this.GetMarketSeries(1);
-			cs2 = this.GetMarketSeries(2);
 
-			if (cs2.Height > 0 && cs1.Height / cs2.Height >= TriggerCandleRatio && cs1.High < cs2.High && cs1.Low < cs2.Low && cs1.CloseToLowHeight / cs2.CloseToLowHeight >= )
+			cs2 = this.GetMarketSeries(1);
+			cs3 = this.GetMarketSeries(2);
+
+			Print("{0}", cs2.OpenTime.ToLocalTime().ToString("dd MMM yy HH:mm"));
+
+			if (
+				cs2.Height.IsPositive() && cs3.Height.IsPositive()
+				&& cs2.Height / cs3.Height >= TriggerHeightRatio
+				&& cs2.High < cs3.High && cs2.Low < cs3.Low
+				&& cs2.CloseToLowHeight / cs3.CloseToLowHeight >= TriggerHLRatio
+			)
 			{
 				//BUY
 				ExecuteMarketOrder(TradeType.Buy, Symbol.Name, Volume, string.Empty, StopLossPips > 0 ? new Nullable<double>(StopLossPips) : null, TakeProfitPips > 0 ? new Nullable<double>(TakeProfitPips) : null);
 			}
 
-			if (cs2.Height > 0 && cs1.Height / cs2.Height >= TriggerCandleRatio && cs1.High > cs2.High && cs1.Low > cs2.Low)
+			if (
+				cs2.Height.IsPositive() && cs3.Height.IsPositive()
+				&& cs2.Height / cs3.Height >= TriggerHeightRatio
+				&& cs2.High > cs3.High && cs2.Low > cs3.Low
+				&& cs2.HighToCloseHeight / cs3.HighToCloseHeight >= TriggerHLRatio
+			)
 			{
 				//SELL
 				ExecuteMarketOrder(TradeType.Sell, Symbol.Name, Volume, string.Empty, StopLossPips > 0 ? new Nullable<double>(StopLossPips) : null, TakeProfitPips > 0 ? new Nullable<double>(TakeProfitPips) : null);

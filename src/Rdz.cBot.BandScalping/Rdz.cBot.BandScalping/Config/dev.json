@@ -1,0 +1,12 @@
+{
+  "QuietZones": {
+    "DateFormat": "d MMM yyyy HH:mm:ss",
+    "Zones": [
+      {
+        "Enabled": false,
+        "From": "5 Jun 2020 13:40:00",
+        "To": "5 Jun 2020 15:35:00"
+      }
+    ]
+  }
+}

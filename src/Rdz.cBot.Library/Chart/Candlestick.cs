@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Rdz.cBot.Library;
+using Rdz.cBot.Library.Extensions;
 
 namespace Rdz.cBot.Library.Chart
 {
@@ -27,8 +28,21 @@ namespace Rdz.cBot.Library.Chart
 
 		public override string ToString()
 		{
-			return string.Format("[{10:ddMMMyyyy-HHmmss}] High: {0}, Open: {1}, Close: {2}, Low: {3}, LowerShadow: {4}, UpperShadow: {5}, RealBody: {6}, LowerShadow%: {7}, RealBody%: {8}, Height: {9}", this.High, this.Open, this.Close, this.Low, this.LowerShadowHeight, this.UpperShadowHeight, this.RealBodyHeight, this.LowerShadowPercentage, this.RealBodyPercentage, this.Height, this.OpenTime);
+			return this.ToString(false);
 		}
+		public string ToString(int digit)
+		{
+			return this.ToString(false, digit);
+		}
+		public string ToString(bool IsUTC, int digit = -1)
+		{
+			string sDigit = digit.DigitFormat();
+			return string.Format(string.Format("[{{10:ddMMMyyyy-HH:mm:ss}}] High: {{0:{0}}} | Open: {{1:{0}}} | Close: {{2:{0}}} | Low: {{3:{0}}} | LowerShadow: {{4:{0}}} | UpperShadow: {{5:{0}}} | RealBody: {{6:{0}}} | LowerShadow%: {{7:0.00}} | RealBody%: {{8:0.00}} | Height: {{9:{0}}}", sDigit),
+				this.High, this.Open, this.Close, this.Low, this.LowerShadowHeight, this.UpperShadowHeight, this.RealBodyHeight, this.LowerShadowPercentage, this.RealBodyPercentage, this.Height, IsUTC ? this.OpenTime : this.OpenTime.ToLocalTime());
+		}
+		/// <summary>
+		/// The direction of the candlestick, whether bullish or bearish.
+		/// </summary>
 		public enDirection Direction
 		{
 			get
@@ -42,6 +56,9 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		/// <summary>
+		/// The height between High to Low.
+		/// </summary>
 		public double Height
 		{
 			get
@@ -50,6 +67,9 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		/// <summary>
+		/// The "High" of the candlestick body (between Open and Close).
+		/// </summary>
 		public double RealBodyHigh
 		{
 			get
@@ -61,6 +81,9 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		/// <summary>
+		/// The "Low" of the candlestick body (between Open and Close).
+		/// </summary>
 		public double RealBodyLow
 		{
 			get
@@ -71,7 +94,9 @@ namespace Rdz.cBot.Library.Chart
 					return this.Close;
 			}
 		}
-
+		/// <summary>
+		/// The height between Open and Close.
+		/// </summary>
 		public double RealBodyHeight
 		{
 			get
@@ -79,7 +104,9 @@ namespace Rdz.cBot.Library.Chart
 				return Math.Round(this.RealBodyHigh - this.RealBodyLow, Digits);
 			}
 		}
-
+		/// <summary>
+		/// The height between High and RealBodyHigh.
+		/// </summary>
 		public double UpperShadowHeight
 		{
 			get
@@ -88,6 +115,9 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		/// <summary>
+		/// The height between High to Close.
+		/// </summary>
 		public double HighToCloseHeight
 		{
 			get
@@ -95,7 +125,9 @@ namespace Rdz.cBot.Library.Chart
 				return Math.Round(this.High - this.Close, Digits);
 			}
 		}
-
+		/// <summary>
+		/// The height between Close to Low.
+		/// </summary>
 		public double CloseToLowHeight
 		{
 			get
@@ -103,7 +135,9 @@ namespace Rdz.cBot.Library.Chart
 				return Math.Round(this.Close - this.Low, Digits);
 			}
 		}
-
+		/// <summary>
+		/// Check whether it has an Upper Shadow (between High and RealBodyHigh).
+		/// </summary>
 		public bool HasUpperShadow
 		{
 			get
@@ -111,7 +145,9 @@ namespace Rdz.cBot.Library.Chart
 				return this.UpperShadowHeight > 0;
 			}
 		}
-
+		/// <summary>
+		/// The height between RealBodyLow and Low.
+		/// </summary>
 		public double LowerShadowHeight
 		{
 			get
@@ -120,6 +156,9 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		/// <summary>
+		/// Check whether it has an Lower Shadow (between RealBodyLow and Close).
+		/// </summary>
 		public bool HasLowerShadow
 		{
 			get
@@ -128,6 +167,9 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		/// <summary>
+		/// The percentage of RealBodyHeight against Height.
+		/// </summary>
 		public double RealBodyPercentage
 		{
 			get
@@ -136,6 +178,9 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		/// <summary>
+		/// The percentage of Upper Shadow against Height.
+		/// </summary>
 		public double UpperShadowPercentage
 		{
 			get
@@ -143,7 +188,9 @@ namespace Rdz.cBot.Library.Chart
 				return Math.Round(this.UpperShadowHeight / this.Height, Digits);
 			}
 		}
-
+		/// <summary>
+		/// The percentage of Lower Shadow against Height.
+		/// </summary>
 		public double LowerShadowPercentage
 		{
 			get
@@ -176,6 +223,11 @@ namespace Rdz.cBot.Library.Chart
 			}
 		}
 
+		/// <summary>
+		/// To compare between 2 Candlesticks whether it's same.
+		/// </summary>
+		/// <param name="comparer"></param>
+		/// <returns></returns>
 		public bool Same(Candlestick comparer)
 		{
 			return (comparer != null && this.High == comparer.High && this.Low == comparer.Low && this.Open == comparer.Open && this.Close == comparer.Close && this.OpenTime == comparer.OpenTime);
@@ -205,6 +257,34 @@ namespace Rdz.cBot.Library.Chart
 			}
 			return false;
 		}
+		public bool IsAbove(Candlestick candlestick)
+		{
+			return IsAbove(candlestick, enCandlestickPart.All);
+		}
+		public bool IsAbove(Candlestick candlestick, enCandlestickPart part)
+		{
+			if (part == enCandlestickPart.All)
+			{
+				return this.IsAbove(candlestick, enCandlestickPart.High) && this.IsAbove(candlestick, enCandlestickPart.Low) && this.IsAbove(candlestick, enCandlestickPart.RealBodyHigh) && this.IsAbove(candlestick, enCandlestickPart.RealBodyLow);
+			}
+			else if (part == enCandlestickPart.High)
+			{
+				return this.High > candlestick.High;
+			}
+			else if (part == enCandlestickPart.Low)
+			{
+				return this.Low > candlestick.Low;
+			}
+			else if (part == enCandlestickPart.RealBodyHigh)
+			{
+				return this.RealBodyHigh > candlestick.RealBodyHigh;
+			}
+			else if (part == enCandlestickPart.RealBodyLow)
+			{
+				return this.RealBodyLow > candlestick.RealBodyLow;
+			}
+			return false;
+		}
 		public bool IsBelow(double price)
 		{
 			return IsBelow(price, enCandlestickPart.All);
@@ -226,6 +306,34 @@ namespace Rdz.cBot.Library.Chart
 			else if (part == enCandlestickPart.RealBodyHigh || part == enCandlestickPart.RealBody)
 			{
 				return RealBodyHigh < price;
+			}
+			return false;
+		}
+		public bool IsBelow(Candlestick candlestick)
+		{
+			return this.IsBelow(candlestick, enCandlestickPart.All);
+		}
+		public bool IsBelow(Candlestick candlestick, enCandlestickPart part)
+		{
+			if (part == enCandlestickPart.All)
+			{
+				return this.IsBelow(candlestick, enCandlestickPart.High) && this.IsBelow(candlestick, enCandlestickPart.Low) && this.IsBelow(candlestick, enCandlestickPart.RealBodyHigh) && this.IsBelow(candlestick, enCandlestickPart.RealBodyLow);
+			}
+			else if (part == enCandlestickPart.High)
+			{
+				return this.High < candlestick.High;
+			}
+			else if (part == enCandlestickPart.Low)
+			{
+				return this.Low < candlestick.Low;
+			}
+			else if (part == enCandlestickPart.RealBodyHigh)
+			{
+				return this.RealBodyHigh < candlestick.RealBodyHigh;
+			}
+			else if (part == enCandlestickPart.RealBodyLow)
+			{
+				return this.RealBodyLow < candlestick.RealBodyLow;
 			}
 			return false;
 		}

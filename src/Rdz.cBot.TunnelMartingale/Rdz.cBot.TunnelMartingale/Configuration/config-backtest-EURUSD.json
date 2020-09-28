@@ -1,13 +1,14 @@
 {
   "OpenCycleMethod": "Trap",
-  "RunningCycleMethod": "Normal",
-  "TunnelHeight": 200,
-  "StartingLotSize": 0.5,
-  "LotMultiplier": 2,
+  "RunningCycleMethod": "NormalSmartBucket",
+  "TunnelHeight": 250,
+  "StartingLotSize": 0.75,
+  "LotMultiplier": 3,
+  "SmartBucketModel": "AcrossCycleOnly",
   "Target": {
     "TargetType": "FixedTargetProfit",
-    "FixedTargetProfit": 25,
-    "EnableTargetProfit": false,
+    "FixedTargetProfit": 75,
+    "EnableTargetProfit": true,
     "EnableStopLoss": false,
     "FixedStopLoss": -5
   },
@@ -16,26 +17,202 @@
   "SessionDates": {
     "Enabled": true,
     "ParseFormat": "d MMM yyyy HH:mm:ss",
-    "Interval": "0.00:05:00",
+    "Interval": "0.09:00:00",
+    "CloseAllOrdersWhenIntervalEnds": true,
     "MaxCyclePerSession": 1,
     "Sessions": [
       {
-        "Date": "02 Apr 2020 14:00:00"
+        "Date": "11 Mar 2020 20:30:00"
+      },
+      {
+        "Date": "12 Mar 2020 21:30:00"
+      },
+      {
+        "Date": "16 Mar 2020 06:30:00",
+        "Enabled": false
+      },
+      {
+        "Date": "16 Mar 2020 20:30:00"
+      },
+      {
+        "Date": "17 Mar 2020 15:25:00"
+      },
+      {
+        "Date": "17 Mar 2020 22:45:00"
+      },
+      {
+        "Date": "18 Mar 2020 20:30:00"
+      },
+      {
+        "Date": "19 Mar 2020 20:30:00"
+      },
+      {
+        "Date": "19 Mar 2020 21:00:00"
+      },
+      {
+        "Date": "20 Mar 2020 22:00:00"
+      },
+      {
+        "Date": "20 Mar 2020 23:00:00"
+      },
+      {
+        "Date": "23 Mar 2020 20:00:00"
+      },
+      {
+        "Date": "24 Mar 2020 14:00:00"
+      },
+      {
+        "Date": "24 Mar 2020 21:15:00"
+      },
+      {
+        "Date": "25 Mar 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "26 Mar 2020 20:30:00"
+      },
+      {
+        "Date": "27 Mar 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "30 Mar 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "31 Mar 2020 20:30:00"
+      },
+      {
+        "Date": "01 Apr 2020 20:15:00"
       },
       {
         "Date": "02 Apr 2020 20:30:00"
       },
       {
-        "Date": "03 Apr 2020 14:00:00"
+        "Date": "03 Apr 2020 20:15:00"
       },
       {
-        "Date": "03 Apr 2020 20:30:00"
+        "Date": "06 Apr 2020 06:45:00",
+        "Enabled": false
+      },
+      {
+        "Date": "07 Apr 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "08 Apr 2020 21:00:00",
+        "Enabled": false
       },
       {
         "Date": "09 Apr 2020 20:30:00"
       },
       {
-        "Date": "08 May 2020 22:00:00"
+        "Date": "10 Apr 2020 20:30:00"
+      },
+      {
+        "Date": "13 Apr 2020 14:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "14 Apr 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "15 Apr 2020 20:30:00"
+      },
+      {
+        "Date": "16 Apr 2020 20:30:00"
+      },
+      {
+        "Date": "17 Apr 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "20 Apr 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "21 Apr 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "22 Apr 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "23 Apr 2020 14:00:00"
+      },
+      {
+        "Date": "23 Apr 2020 21:00:00"
+      },
+      {
+        "Date": "24 Apr 2020 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "27 Apr 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "28 Apr 2020 15:00:00"
+      },
+      {
+        "Date": "29 Apr 2020 20:30:00"
+      },
+      {
+        "Date": "30 Apr 2020 20:30:00"
+      },
+      {
+        "Date": "30 Apr 2020 22:00:00"
+      },
+      {
+        "Date": "01 May 2020 22:00:00"
+      },
+      {
+        "Date": "04 May 2020 21:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "05 May 2020 16:00:00"
+      },
+      {
+        "Date": "05 May 2020 22:00:00"
+      },
+      {
+        "Date": "06 May 2020 17:00:00",
+        "Enabled": false
+      },
+      {
+        "Date": "06 May 2020 20:15:00",
+        "Enabled": false
+      },
+      {
+        "Date": "07 May 2020 20:30:00"
+      },
+      {
+        "Date": "08 May 2020 20:15:00"
+      },
+      {
+        "Date": "11 May 2020 20:30:00",
+        "Enabled": false
+      },
+      {
+        "Date": "12 May 2020 20:30:00"
+      },
+      {
+        "Date": "15 May 2020 20:30:00"
+      },
+      {
+        "Date": "21 May 2020 14:00:00"
+      },
+      {
+        "Date": "21 May 2020 21:45:00"
+      },
+      {
+        "Date": "01 May 2020 22:00:00"
+      },
+      {
+        "Date": "01 Jun 2020 22:00:00"
       }
     ]
   }

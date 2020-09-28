@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rdz.cBot.GridTrap", "Rdz.cB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rdz.cBot.Library", "..\Rdz.cBot.Library\Rdz.cBot.Library.csproj", "{5642E84D-0D26-4428-B4A1-E286C3A3672B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rdz.Indi.BollingerBandDistance", "..\Rdz.Indi.BollingerBandDistance\Rdz.Indi.BollingerBandDistance\Rdz.Indi.BollingerBandDistance.csproj", "{693D2EAA-8230-4E2F-9A7D-679E66993181}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5D06D080-2381-4071-9E5F-CC813A09464F}"
 	ProjectSection(SolutionItems) = preProject
 		nuget.config = nuget.config
@@ -28,10 +26,6 @@ Global
 		{5642E84D-0D26-4428-B4A1-E286C3A3672B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5642E84D-0D26-4428-B4A1-E286C3A3672B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5642E84D-0D26-4428-B4A1-E286C3A3672B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{693D2EAA-8230-4E2F-9A7D-679E66993181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{693D2EAA-8230-4E2F-9A7D-679E66993181}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{693D2EAA-8230-4E2F-9A7D-679E66993181}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{693D2EAA-8230-4E2F-9A7D-679E66993181}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

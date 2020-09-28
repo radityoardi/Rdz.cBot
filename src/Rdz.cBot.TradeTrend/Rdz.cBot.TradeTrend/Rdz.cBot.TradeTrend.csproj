@@ -44,12 +44,18 @@
     <Reference Include="System.Xml" />
     <Reference Include="cAlgo.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=3499da3018340880, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\API\cAlgo.API.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\cAlgo\API\cAlgo.API.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Rdz.cBot.TradeTrend.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Rdz.cBot.Library\Rdz.cBot.Library.csproj">
+      <Project>{5642e84d-0d26-4428-b4a1-e286c3a3672b}</Project>
+      <Name>Rdz.cBot.Library</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

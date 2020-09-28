@@ -24,7 +24,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <WarningsAsErrors>CS0108,CS0162,CS0109,CS0219,CS0169,CS0628</WarningsAsErrors>
@@ -72,8 +72,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Configuration\AddSessionDates.ps1" />
+    <None Include="Configuration\config-backtest-EURUSD-DAILY.json" />
+    <None Include="Configuration\config-backtest-EURUSD-ALL.json" />
+    <None Include="Configuration\config-backtest-EURUSD-DailyCandle.json" />
+    <None Include="Configuration\config-backtest-EURUSD-CPICoreCPI.json" />
+    <None Include="Configuration\config-backtest-EURUSD-GermanIFOBusinessClimate.json" />
+    <None Include="Configuration\config-backtest-EURUSD.json" />
+    <None Include="Configuration\config-backtest-USDJPY.json" />
     <None Include="Configuration\config.json" />
+    <None Include="Configuration\configuration-production.json" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Criteria.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

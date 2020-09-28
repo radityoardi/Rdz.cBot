@@ -1,0 +1,77 @@
+{
+	"OpenCycleMethod": "Trap",
+	"RunningCycleMethod": "NormalSmartBucket",
+	"TunnelHeight": 200,
+	"StartingLotSize": 0.25,
+	"LotMultiplier": 3,
+	"SmartBucketModel": "AcrossCycleOnly",
+	"Trap": {
+		"Validity": "0.01:00:00"
+	},
+	"Target": {
+		"TargetType": "FixedTargetProfit",
+		"FixedTargetProfit": 25,
+		"EnableTargetProfit": true,
+		"EnableStopLoss": false,
+		"FixedStopLoss": -5
+	},
+	"CloseAllOrdersOnStop": true,
+	"LastDirectionTrailingHeight": 10,
+	"SessionDates": {
+		"Enabled": true,
+		"ParseFormat": "d MMM yyyy HH:mm:ss",
+		"Interval": "0.09:00:00",
+		"CloseAllOrdersWhenIntervalEnds": true,
+		"MaxCyclePerSession": 1,
+		"Sessions": [
+      {
+        "Date": "31 Jan 2019 03:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "21 Mar 2019 02:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "02 May 2019 02:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "20 Jun 2019 02:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "01 Aug 2019 02:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "19 Sep 2019 02:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "31 Oct 2019 02:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "12 Dec 2019 03:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "30 Jan 2020 03:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "03 Mar 2020 23:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "16 Mar 2020 05:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "30 Apr 2020 02:00:00",
+        "Enabled": true
+      }
+		]
+	}
+}

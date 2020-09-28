@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30104.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rdz.cBot.BandScalping", "Rdz.cBot.BandScalping\Rdz.cBot.BandScalping.csproj", "{6B037584-7972-4346-82CD-57120C3DEAAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rdz.cBot.Library", "..\Rdz.cBot.Library\Rdz.cBot.Library.csproj", "{5642E84D-0D26-4428-B4A1-E286C3A3672B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6B037584-7972-4346-82CD-57120C3DEAAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B037584-7972-4346-82CD-57120C3DEAAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B037584-7972-4346-82CD-57120C3DEAAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B037584-7972-4346-82CD-57120C3DEAAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5642E84D-0D26-4428-B4A1-E286C3A3672B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5642E84D-0D26-4428-B4A1-E286C3A3672B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5642E84D-0D26-4428-B4A1-E286C3A3672B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5642E84D-0D26-4428-B4A1-E286C3A3672B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {92A9B75F-1735-4F03-9D68-C74D4D9448E0}
+	EndGlobalSection
+EndGlobal

@@ -16,11 +16,11 @@ namespace Rdz.cBot
     [Robot(TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
     public class BTSOBot : RdzRobot, IRdzRobot
 	{
-		[Parameter("Configuration Path", DefaultValue = @"%USERPROFILE%\Documents\Rdz.cBot.BTSOBot\configuration.json")]
-		public string ConfigurationFilePath { get; set; }
+		[Parameter("Configuration Path", Group = "Standard", DefaultValue = @"%USERPROFILE%\Documents\Rdz.cBot.BTSOBot\configuration.json")]
+		public override string ConfigurationFilePath { get; set; }
 
-		[Parameter("Auto-refresh", DefaultValue = false)]
-		public bool AutoRefreshConfiguration { get; set; }
+		[Parameter("Auto-refresh", Group = "Standard", DefaultValue = false)]
+		public override bool AutoRefreshConfiguration { get; set; }
 
 		[Parameter("Crossing Tolerance", DefaultValue = 0.100)]
 		public double CrossingTolerance { get; set; }

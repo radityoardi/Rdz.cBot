@@ -7,14 +7,19 @@ using Rdz.cBot.Library.Extensions;
 using cAlgo.API;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using cAlgo.API.Indicators;
 
 namespace Rdz.cBot.TunnelMartingale.Schemas
 {
-	internal class Tunnel
+	internal class TunnelMartingaleEngine
 	{
-		internal string TMLabel = "TM";
+		internal const string TMLabel = "TM";
+		internal const string TMLabelSeparator = "-";
 		internal TunnelMartingaleBot tmBot { get; private set; }
-		internal Tunnel(TunnelMartingaleBot robot)
+		internal RelativeStrengthIndex rsi { get; set; }
+		internal BollingerBands bb { get; set; }
+		internal TunnelMartingaleEngine(TunnelMartingaleBot robot)
 		{
 			//Ask is always higher than Bid, Buy is always take the Ask while Sell is always take the Bid.
 			tmBot = robot;
@@ -22,54 +27,75 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 			SessionNumber = 0;
 			Statistics = new TunnelStatistics();
 			TunnelChartObjects = new TunnelChartObjects();
+			rsi = tmBot.Indicators.RelativeStrengthIndex(tmBot.Bars.ClosePrices, tmBot.RSIPeriods);
+			bb = tmBot.Indicators.BollingerBands(tmBot.Bars.ClosePrices, tmBot.BBPeriods, 2, tmBot.BBMAType);
+			if (tmBot.config.InitialBucket.IsPositive())
+			{
+				NetLossBucket = !tmBot.config.InitialBucket.IsNegative() ? -tmBot.config.InitialBucket : tmBot.config.InitialBucket;
+				tmBot.Print("Initial bucket set at {0:#,##0.00}", NetLossBucket);
+			}
 			Initialize();
 		}
 
 		internal void Initialize()
 		{
+			tmBot.Print("»»»»»»»» Initializing...");
 			TunnelStatus = enTunnelStatus.Inactive;
-			LastVolume = tmBot.LotToVolume(tmBot.config.StartingLotSize);
+			LastVolume = tmBot.LotToVolume(StartingLotSize);
 			if (tmBot.config != null)
 			{
 				if (!tmBot.config.SessionDates.Enabled) // if SessionDates is not enabled
 				{
-					TunnelStatus = enTunnelStatus.Pending;
+					TunnelStatus = enTunnelStatus.PendingActivation;
 					if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.AlwaysBuy || (tmBot.config.OpenCycleMethod == enOpenCycleMethod.RememberLastProfitable && LastTradeType == TradeType.Buy))
 					{
-						tmBot.ExecuteMarketOrderAsync(cAlgo.API.TradeType.Buy, tmBot.Symbol.Name, LastVolume, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, InitialPositionOpened);
+						tmBot.ExecuteMarketOrderAsync(TradeType.Buy, tmBot.Symbol.Name, LastVolume, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, InitialPositionOpened);
 					}
 					else if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.AlwaysSell || (tmBot.config.OpenCycleMethod == enOpenCycleMethod.RememberLastProfitable && LastTradeType == TradeType.Sell))
 					{
-						tmBot.ExecuteMarketOrderAsync(cAlgo.API.TradeType.Sell, tmBot.Symbol.Name, LastVolume, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, InitialPositionOpened);
+						tmBot.ExecuteMarketOrderAsync(TradeType.Sell, tmBot.Symbol.Name, LastVolume, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, InitialPositionOpened);
 					}
-					else if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.Trap && tmBot.Positions.Count == 0)
+					else if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.Trap)
 					{
-						var HalfHeight = Math.Abs(tmBot.config.TunnelHeight / 2);
-						TunnelCeiling = tmBot.ShiftPrice(tmBot.Symbol.Ask, HalfHeight);
-						tmBot.Print("Tunnel Ceiling set at {0}", TunnelCeiling.ToString());
-						TunnelFloor = tmBot.ShiftPrice(tmBot.Symbol.Bid, -HalfHeight);
-						tmBot.Print("Tunnel Floor set at {0}", TunnelFloor.ToString());
-						TunnelCenter = tmBot.ShiftPrice(TunnelFloor, (int)Math.Ceiling((double)(tmBot.config.TunnelHeight / 2)));
-						tmBot.Print("Tunnel Center set at {0}", TunnelCenter.ToString());
+						if (tmPositions.Count() == 0 && IsTrapTime)
+						{
+							int HalfHeight = Math.Abs(TunnelHeight / 2);
+							TunnelCeiling = tmBot.ShiftPriceInPips(tmBot.Symbol.Ask, HalfHeight);
+							tmBot.Print("Tunnel Ceiling set at {0}", TunnelCeiling.ToString());
+							TunnelFloor = tmBot.ShiftPriceInPips(tmBot.Symbol.Bid, -HalfHeight);
+							tmBot.Print("Tunnel Floor set at {0}", TunnelFloor.ToString());
 
-						TunnelChartObjects.DrawMainLines(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter);
-						TunnelChartObjects.DrawMainLinesHistory(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter, TMLabel + PositionSessionNumber);
-						TunnelChartObjects.DrawDirection(tmBot, Direction);
+							TunnelCenter = TunnelCeiling.FindCenterAgainst(TunnelFloor, tmBot.Symbol.Digits);
+							tmBot.Print("Tunnel Center set at {0}", TunnelCenter.ToString());
 
-						tmBot.PlaceStopOrderAsync(TradeType.Buy, tmBot.Symbol.Name, LastVolume, TunnelCeiling, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, TrapStarted);
-						tmBot.PlaceStopOrderAsync(TradeType.Sell, tmBot.Symbol.Name, LastVolume, TunnelFloor, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, TrapStarted);
+							TunnelChartObjects.DrawMainLines(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter);
+							TunnelChartObjects.DrawMainLinesHistory(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter, TMLabel + PositionSessionNumber);
+							TunnelChartObjects.DrawDirection(tmBot, Direction);
+
+							tmBot.PlaceStopOrderAsync(TradeType.Buy, tmBot.Symbol.Name, LastVolume, TunnelCeiling, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, TrapStarted);
+							tmBot.PlaceStopOrderAsync(TradeType.Sell, tmBot.Symbol.Name, LastVolume, TunnelFloor, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, TrapStarted);
+						}
+						else
+						{
+							tmBot.Print("BollingerBandsDistance: {0}", BollingerBandsDistance);
+							TunnelStatus = enTunnelStatus.Inactive;
+						}
 					}
 					else
 					{
 						tmBot.Print("Open Cycle Method: '{0}' is not implemented", tmBot.config.OpenCycleMethod.ToString());
+						TunnelStatus = enTunnelStatus.Inactive;
 					}
 				}
 				else
 				{
+					// if SessionDates is enabled
 					ParsedSessionDates = GetParsedSessionDates();
+					CurrentSessionDate = UseSessionDates ? ParsedSessionDates.First() : null;
+
 					if (ParsedSessionDates.Count > 0)
 					{
-						tmBot.Print("Session Dates found {0} records. The next is at: {1:dd MMM yyyy HH:mm:ss}.", ParsedSessionDates.Count, ParsedSessionDates.First().ActualDate);
+						tmBot.Print("Session Dates found {0} records. The next is at: {1:dd MMM yyyy HH:mm:ss}.", ParsedSessionDates.Count, CurrentSessionDate.ActualStartDate);
 					}
 					else
 					{
@@ -83,12 +109,13 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 			}
 		}
 
-		private List<SessionInfo> GetParsedSessionDates()
+		private List<TradeSession> GetParsedSessionDates()
 		{
 			tmBot.config.SessionDates.Sessions.ForEach(x => {
-				x.ActualDate = x.Date.ParseDateTime(tmBot.config.SessionDates.ParseFormat);
+				x.ActualStartDate = x.Date.ParseDateTime(tmBot.config.SessionDates.ParseFormat);
+				x.ActualEndDate = x.Date.ParseDateTime(tmBot.config.SessionDates.ParseFormat).Add(tmBot.config.SessionDates.Interval);
 			});
-			return tmBot.config.SessionDates.Sessions.Where(x => x.Enabled && x.ActualDate.ToUniversalTime() >= tmBot.TimeInUtc).OrderBy(x => x.ActualDate).ToList();
+			return tmBot.config.SessionDates.Sessions.Where(x => x.Enabled && x.ActualStartDate.ToUniversalTime() >= tmBot.TimeInUtc).OrderBy(x => x.ActualStartDate).ToList();
 		}
 
 		private void TrapStarted(TradeResult result)
@@ -96,6 +123,7 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 			if (result.IsSuccessful)
 			{
 				//write here if successful
+				TunnelStatus = enTunnelStatus.PendingOrders;
 			}
 			else
 			{
@@ -106,39 +134,39 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 		{
 			if (result.IsSuccessful)
 			{
-				if ((tmBot.config.SessionDates.Enabled && ParsedSessionDates.First().SessionTradeType == TradeType.Buy) || tmBot.config.OpenCycleMethod == enOpenCycleMethod.AlwaysBuy || (tmBot.config.OpenCycleMethod == enOpenCycleMethod.RememberLastProfitable && LastTradeType == TradeType.Buy))
+				if ((tmBot.config.SessionDates.Enabled && CurrentSessionDate.SessionTradeType == TradeType.Buy) || tmBot.config.OpenCycleMethod == enOpenCycleMethod.AlwaysBuy || (tmBot.config.OpenCycleMethod == enOpenCycleMethod.RememberLastProfitable && LastTradeType == TradeType.Buy))
 				{
 					TunnelCeiling = result.Position.EntryPrice;
 					tmBot.Print("Tunnel Ceiling set at {0}", TunnelCeiling.ToString());
-					TunnelFloor = tmBot.ShiftPrice(TunnelCeiling, (int)tmBot.config.TunnelHeight * -1);
+					TunnelFloor = tmBot.ShiftPriceInPips(TunnelCeiling, -TunnelHeight);
 					tmBot.Print("Tunnel Floor set at {0}", TunnelFloor.ToString());
-					TunnelCenter = tmBot.ShiftPrice(TunnelFloor, (int)Math.Ceiling((double)(tmBot.config.TunnelHeight / 2)));
+					TunnelCenter = TunnelCeiling.FindCenterAgainst(TunnelFloor, tmBot.Symbol.Digits);
 					tmBot.Print("Tunnel Center set at {0}", TunnelCenter.ToString());
 
 					TunnelChartObjects.DrawMainLines(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter);
 					TunnelChartObjects.DrawDirection(tmBot, Direction);
 
-					LastVolume = result.Position.VolumeInUnits * tmBot.config.LotMultiplier;
+					LastVolume = tmBot.Symbol.NormalizeVolumeInUnits(result.Position.VolumeInUnits * tmBot.config.LotMultiplier);
 
-					tmBot.PlaceStopOrderAsync(TradeType.Sell, tmBot.config.SessionDates.Enabled ? GetSymbolName(ParsedSessionDates.First()) : tmBot.Symbol.Name, LastVolume, TunnelFloor, TMLabel + GetPositionIndexNumber() +PositionSessionNumber, AnotherOrderPlaced);
+					tmBot.PlaceStopOrderAsync(TradeType.Sell, tmBot.config.SessionDates.Enabled ? GetSymbolName(CurrentSessionDate) : tmBot.Symbol.Name, LastVolume, TunnelFloor, TMLabel + GetPositionIndexNumber() +PositionSessionNumber, AnotherOrderPlaced);
 				}
-				else if ((tmBot.config.SessionDates.Enabled && ParsedSessionDates.First().SessionTradeType == TradeType.Sell) || tmBot.config.OpenCycleMethod == enOpenCycleMethod.AlwaysSell || (tmBot.config.OpenCycleMethod == enOpenCycleMethod.RememberLastProfitable && LastTradeType == TradeType.Sell))
+				else if ((tmBot.config.SessionDates.Enabled && CurrentSessionDate.SessionTradeType == TradeType.Sell) || tmBot.config.OpenCycleMethod == enOpenCycleMethod.AlwaysSell || (tmBot.config.OpenCycleMethod == enOpenCycleMethod.RememberLastProfitable && LastTradeType == TradeType.Sell))
 				{
 					TunnelFloor = result.Position.EntryPrice;
 					tmBot.Print("Tunnel Floor set at {0}", TunnelFloor.ToString());
-					TunnelCeiling = tmBot.ShiftPrice(TunnelFloor, (int)tmBot.config.TunnelHeight);
+					TunnelCeiling = tmBot.ShiftPriceInPips(TunnelFloor, TunnelHeight);
 					tmBot.Print("Tunnel Ceiling set at {0}", TunnelCeiling.ToString());
-					TunnelCenter = tmBot.ShiftPrice(TunnelFloor, (int)Math.Ceiling((double)(tmBot.config.TunnelHeight / 2)));
+					TunnelCenter = TunnelCeiling.FindCenterAgainst(TunnelFloor, tmBot.Symbol.Digits);
 					tmBot.Print("Tunnel Center set at {0}", TunnelCenter.ToString());
 
 					TunnelChartObjects.DrawMainLines(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter);
 					TunnelChartObjects.DrawDirection(tmBot, Direction);
 
-					LastVolume = result.Position.VolumeInUnits * tmBot.config.LotMultiplier;
+					LastVolume = tmBot.Symbol.NormalizeVolumeInUnits(result.Position.VolumeInUnits * tmBot.config.LotMultiplier);
 
-					tmBot.PlaceStopOrderAsync(TradeType.Buy, tmBot.config.SessionDates.Enabled ? GetSymbolName(ParsedSessionDates.First()) : tmBot.Symbol.Name, LastVolume, TunnelCeiling, TMLabel + GetPositionIndexNumber() +PositionSessionNumber, AnotherOrderPlaced);
+					tmBot.PlaceStopOrderAsync(TradeType.Buy, tmBot.config.SessionDates.Enabled ? GetSymbolName(CurrentSessionDate) : tmBot.Symbol.Name, LastVolume, TunnelCeiling, TMLabel + GetPositionIndexNumber() +PositionSessionNumber, AnotherOrderPlaced);
 				}
-				Statistics.SetMaxBounce(tmBot.Positions.Count + 1, tmBot.Time);
+				Statistics.SetMaxBounce(tmPositions.Count() + 1, tmBot.Time);
 			}
 			else
 			{
@@ -161,50 +189,67 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 
 		internal void PendingOrderFilled(PendingOrderFilledEventArgs result)
 		{
-			//add routine for Trap model, close all pending orders when first order is activated/filled
-			if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.Trap && result.Position.Label == TMLabel + "-I" + (1).ToString("#000") + PositionSessionNumber)
+			if (result.Position.Label.StartsWith(TMLabel + TMLabelSeparator))
 			{
-				foreach (var to in tmBot.PendingOrders)
+				//add routine for Trap model, close all pending orders when first order is activated/filled
+				if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.Trap && result.Position.Label == TMLabel + TMLabelSeparator + "I" + (1).ToString("#000") + PositionSessionNumber)
 				{
-					tmBot.CancelPendingOrderAsync(to);
+					TunnelStatus = enTunnelStatus.PendingActivation;
+					foreach (var to in tmBot.PendingOrders)
+					{
+						tmBot.CancelPendingOrderAsync(to);
+					}
+
+				}
+
+				if (result.Position.Label == TMLabel + GetPositionIndexNumber(0) + PositionSessionNumber) //check whether this order filled is the last position, if yes then...
+				{
+					Statistics.SetMaxBounce(tmPositions.Count(), tmBot.Time);
+
+					LastTradeType = result.Position.TradeType;
+					TunnelStatus = enTunnelStatus.PendingActivation;
+					LastVolume = tmBot.Symbol.NormalizeVolumeInUnits(result.Position.VolumeInUnits * tmBot.config.LotMultiplier);
+					tmBot.Print("LastVolume: {0:#,##0}, Previous Trade: {1}", LastVolume, LastTradeType.ToString());
+
+					tmBot.PlaceStopOrderAsync(result.Position.TradeType == TradeType.Buy ? TradeType.Sell : TradeType.Buy,
+						tmBot.config.SessionDates.Enabled ? GetSymbolName(CurrentSessionDate) : tmBot.Symbol.Name,
+						LastVolume,
+						(result.Position.TradeType == TradeType.Buy ? TunnelFloor : TunnelCeiling),
+						TMLabel + GetPositionIndexNumber() + PositionSessionNumber, AnotherOrderPlaced);
+				}
+
+				TunnelChartObjects.DrawDirection(tmBot, Direction);
+
+				//no IF, executes every pending order filled
+				UpdateTargetLines(result.Position.EntryPrice);
+			}
+		}
+
+		internal void PositionsClosed(PositionClosedEventArgs result)
+		{
+			if (result.Position.Label.StartsWith(TMLabel + TMLabelSeparator))
+			{
+				if (result.Position.Label.EndsWith(GetPositionIndexNumber(-tmPositions.Count() + 1) + PositionSessionNumber))
+				{
+					//EndTunnel(); //not on, due to cyclic reference
 				}
 			}
-
-			if (result.Position.Label == TMLabel + GetPositionIndexNumber(0) + PositionSessionNumber)
-			{
-				Statistics.SetMaxBounce(tmBot.Positions.Count, tmBot.Time);
-
-				LastTradeType = result.Position.TradeType;
-				TunnelStatus = enTunnelStatus.Pending;
-				LastVolume = result.Position.VolumeInUnits * tmBot.config.LotMultiplier;
-
-				tmBot.PlaceStopOrderAsync((result.Position.TradeType == TradeType.Buy ? TradeType.Sell : TradeType.Buy),
-					tmBot.config.SessionDates.Enabled ? GetSymbolName(ParsedSessionDates.First()) : tmBot.Symbol.Name,
-					result.Position.VolumeInUnits * tmBot.config.LotMultiplier,
-					(result.Position.TradeType == TradeType.Buy ? TunnelFloor : TunnelCeiling),
-					TMLabel + GetPositionIndexNumber() + PositionSessionNumber, AnotherOrderPlaced);
-			}
-
-			TunnelChartObjects.DrawDirection(tmBot, Direction);
-
-			//no IF, executes every pending order filled
-			UpdateTargetLines(result.Position.EntryPrice);
 		}
 
 		internal void UpdateTargetLines(double EntryPrice)
 		{
 			double breakEvenPrice =
 				LastTradeType == TradeType.Buy ?
-				tmBot.Positions.FindNetBreakEvenPrice(EntryPrice, tmBot.ShiftPrice(EntryPrice, tmBot.config.TunnelHeight), tmBot.Symbol.Digits) :
-				tmBot.Positions.FindNetBreakEvenPrice(EntryPrice, tmBot.ShiftPrice(EntryPrice, -tmBot.config.TunnelHeight), tmBot.Symbol.Digits);
+				tmPositions.FindNetBreakEvenPrice(EntryPrice, tmBot.ShiftPriceInPips(EntryPrice, TunnelHeight), tmBot.Symbol.Digits) :
+				tmPositions.FindNetBreakEvenPrice(EntryPrice, tmBot.ShiftPriceInPips(EntryPrice, -TunnelHeight), tmBot.Symbol.Digits);
 			tmBot.Print("Break Even Price is at: {0}", breakEvenPrice);
 			BreakEven = breakEvenPrice;
 			TunnelChartObjects.DrawBreakEvenPrice(tmBot, BreakEven);
 
 			double targetPrice =
 				LastTradeType == TradeType.Buy ?
-				tmBot.Positions.FindTargetPrice(EntryPrice, tmBot.ShiftPrice(EntryPrice, tmBot.config.TunnelHeight), tmBot.Symbol.Digits, WhatIfProfit()) :
-				tmBot.Positions.FindTargetPrice(EntryPrice, tmBot.ShiftPrice(EntryPrice, -tmBot.config.TunnelHeight), tmBot.Symbol.Digits, WhatIfProfit());
+				tmPositions.FindTargetPrice(EntryPrice, tmBot.ShiftPriceInPips(EntryPrice, TunnelHeight), tmBot.Symbol.Digits, WhatIfProfit()) :
+				tmPositions.FindTargetPrice(EntryPrice, tmBot.ShiftPriceInPips(EntryPrice, -TunnelHeight), tmBot.Symbol.Digits, WhatIfProfit());
 			tmBot.Print("Target Price is at: {0}", targetPrice);
 			TunnelChartObjects.DrawTargetPrice(tmBot, targetPrice);
 		}
@@ -213,7 +258,7 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 		{
 			if (tmBot.History == null || (tmBot.History != null && tmBot.History.Count == 0))
 			{
-				return tmBot.Positions.Last().EntryTime;
+				return tmPositions.Last().EntryTime;
 			}
 			else
 			{
@@ -221,7 +266,7 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 			}
 		}
 
-		internal string GetSymbolName(SessionInfo si)
+		internal string GetSymbolName(TradeSession si)
 		{
 			if (tmBot.config.SessionDates.Enabled && si != null && si.SymbolRetrieval == enSymbolRetrieval.Custom && !string.IsNullOrEmpty(si.SymbolName))
 			{
@@ -232,64 +277,56 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 
 		internal void TickCheck()
 		{
-			//this is when Session Dates is enabled
-			if (tmBot.config.SessionDates.Enabled && ParsedSessionDates != null && TunnelStatus == enTunnelStatus.Inactive)
+			if (TunnelStatus == enTunnelStatus.Running || TunnelStatus == enTunnelStatus.PendingOrders)
 			{
-				if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.Trap) //for Trap
+				//when it's a trap, and out of the validity period
+				if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.Trap && tmPositions.Count() == 0 && tmBot.config.Trap.Validity != TimeSpan.Zero && tmBot.TimeInUtc >= CurrentSessionDate.ActualStartDate.Add(tmBot.config.Trap.Validity).ToUniversalTime())
 				{
-					if (ParsedSessionDates.Count > 0 && tmBot.TimeInUtc >= ParsedSessionDates.First().ActualDate.ToUniversalTime() && tmBot.TimeInUtc <= ParsedSessionDates.First().ActualDate.ToUniversalTime().Add(tmBot.config.SessionDates.Interval))
-					{
-						TunnelStatus = enTunnelStatus.Pending;
-						SessionNumber += 1;
-						//executing for Trap method
-						var HalfHeight = Math.Abs(tmBot.config.TunnelHeight / 2);
-						TunnelCeiling = tmBot.ShiftPrice(tmBot.Symbol.Ask, HalfHeight);
-						tmBot.Print("Tunnel Ceiling set at {0}", TunnelCeiling.ToString());
-						TunnelFloor = tmBot.ShiftPrice(tmBot.Symbol.Bid, -HalfHeight);
-						tmBot.Print("Tunnel Floor set at {0}", TunnelFloor.ToString());
-						TunnelCenter = tmBot.ShiftPrice(TunnelFloor, (int)Math.Ceiling((double)(tmBot.config.TunnelHeight / 2)));
-						tmBot.Print("Tunnel Center set at {0}", TunnelCenter.ToString());
-
-						TunnelChartObjects.DrawMainLines(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter);
-						TunnelChartObjects.DrawMainLinesHistory(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter, TMLabel + PositionSessionNumber);
-						TunnelChartObjects.DrawDirection(tmBot, Direction);
-
-						LastVolume = tmBot.LotToVolume(tmBot.config.StartingLotSize);
-
-						tmBot.PlaceStopOrderAsync(TradeType.Buy, tmBot.Symbol.Name, LastVolume, TunnelCeiling, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, TrapStarted);
-						tmBot.PlaceStopOrderAsync(TradeType.Sell, tmBot.Symbol.Name, LastVolume, TunnelFloor, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, TrapStarted);
-
-					}
+					tmBot.Print("Validity period is over now at: {0:dd MMM yyyy HH:mm:ss}, closing all and repeating stuff.", CurrentSessionDate.ActualStartDate.Add(tmBot.config.Trap.Validity));
+					EndTunnel();
 				}
-				else
+				//when using SmartBucket
+				if (TunnelStatus == enTunnelStatus.Running && UsesAnySmartBucket && IsSmartBucketInCycle && JustPassedCenterTunnel)
 				{
-					if (ParsedSessionDates.Count > 0 && tmBot.TimeInUtc >= ParsedSessionDates.First().ActualDate.ToUniversalTime() && tmBot.TimeInUtc <= ParsedSessionDates.First().ActualDate.ToUniversalTime().Add(tmBot.config.SessionDates.Interval))
-					{
-						TunnelStatus = enTunnelStatus.Pending;
-						SessionNumber += 1;
-						LastVolume = tmBot.LotToVolume(tmBot.config.StartingLotSize);
-
-						tmBot.ExecuteMarketOrderAsync(ParsedSessionDates.First().SessionTradeType, GetSymbolName(ParsedSessionDates.First()), LastVolume, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, InitialPositionOpened);
-					}
+					RetreatTunnel();
+				}
+				if (TunnelStatus == enTunnelStatus.Running && OnTarget)
+				{
+					EndTunnel();
 				}
 			}
-
-			if (tmBot.config.RunningCycleMethod == enRunningCycleMethod.NormalSmartBucket && JustPassedCenterTunnel)
+			else if (TunnelStatus == enTunnelStatus.Inactive)
 			{
-				RetreatTunnel();
-			}
+				if (tmBot.config.OpenCycleMethod == enOpenCycleMethod.Trap && ((UseSessionDates && IsWithinCurrentSessionTime) || (!UseSessionDates && IsTrapTime)))
+				{
+					TunnelStatus = enTunnelStatus.PendingActivation;
+					SessionNumber += 1;
+					//executing for Trap method
+					var HalfHeight = Math.Abs(TunnelHeight / 2);
+					TunnelCeiling = tmBot.ShiftPriceInPips(tmBot.Symbol.Ask, HalfHeight);
+					tmBot.Print("Tunnel Ceiling set at {0}", TunnelCeiling.ToString());
+					TunnelFloor = tmBot.ShiftPriceInPips(tmBot.Symbol.Bid, -HalfHeight);
+					tmBot.Print("Tunnel Floor set at {0}", TunnelFloor.ToString());
+					TunnelCenter = TunnelCeiling.FindCenterAgainst(TunnelFloor, tmBot.Symbol.Digits);
+					tmBot.Print("Tunnel Center set at {0}", TunnelCenter.ToString());
 
-			if (OnTarget)
-			{
-				EndTunnel();
-				Initialize();
+					TunnelChartObjects.DrawMainLines(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter);
+					TunnelChartObjects.DrawMainLinesHistory(tmBot, TunnelFloor, TunnelCeiling, TunnelCenter, TMLabel + PositionSessionNumber);
+					TunnelChartObjects.DrawDirection(tmBot, Direction);
 
-				/*
-				var lastTrans = (GetLatestTransDate() - tmBot.TimeInUtc);
+					LastVolume = tmBot.LotToVolume(StartingLotSize);
 
-				if (lastTrans.TotalDays >= 1 || (lastTrans.TotalDays < 1 && GetLatestTransDate().DayOfWeek != tmBot.TimeInUtc.DayOfWeek)) {
+					tmBot.PlaceStopOrderAsync(TradeType.Buy, tmBot.Symbol.Name, LastVolume, TunnelCeiling, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, TrapStarted);
+					tmBot.PlaceStopOrderAsync(TradeType.Sell, tmBot.Symbol.Name, LastVolume, TunnelFloor, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, TrapStarted);
 				}
-				*/
+				else if (UseSessionDates && IsWithinCurrentSessionTime && tmBot.config.OpenCycleMethod != enOpenCycleMethod.Trap)
+				{
+					TunnelStatus = enTunnelStatus.PendingActivation;
+					SessionNumber += 1;
+					LastVolume = tmBot.LotToVolume(StartingLotSize);
+
+					tmBot.ExecuteMarketOrderAsync(CurrentSessionDate.SessionTradeType, GetSymbolName(CurrentSessionDate), LastVolume, TMLabel + GetPositionIndexNumber() + PositionSessionNumber, InitialPositionOpened);
+				}
 			}
 		}
 
@@ -297,47 +334,59 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 		{
 			get
 			{
-				if (ParsedSessionDates.Count > 0)
+				bool profit = false;
+				if (TunnelStatus == enTunnelStatus.Running)
 				{
-					bool profit = false;
-					bool sessionDatesFollowParent = tmBot.config.SessionDates.Enabled && ParsedSessionDates.Count > 0 && ParsedSessionDates.First().Target.TargetType == enSessionTargetType.FollowParent;
+					bool sessionDatesFollowParent = UseSessionDates && CurrentSessionDate != null && CurrentSessionDate.Target.TargetType == enSessionTargetType.FollowParent;
 					bool noSessionDatesOrFollowParent = !tmBot.config.SessionDates.Enabled || sessionDatesFollowParent;
 					bool withStopLossReached = tmBot.config.Target.EnableStopLoss && CurrentProfit < tmBot.config.Target.FixedStopLoss;
+					bool endofIntervalSession = tmBot.config.SessionDates.CloseAllOrdersWhenIntervalEnds && UseSessionDates && CurrentSessionDate != null && tmBot.TimeInUtc >= CurrentSessionDate.ActualEndDate.ToUniversalTime();
 
 					if (tmBot.config.Target.TargetType == enTargetType.FixedTargetProfit)
 					{
 						bool withTargetProfitReached = tmBot.config.Target.EnableTargetProfit && CurrentProfit > tmBot.config.Target.FixedTargetProfit;
+
+						/*
+						//bool IsInsideRSI = rsi.Result.Last() < tmBot.RSIUpperLevel && rsi.Result.Last() > tmBot.RSILowerLevel; //experimental
+						bool IsOutsideRSI = rsi.Result.Last() > tmBot.RSIUpperLevel || rsi.Result.Last() < tmBot.RSILowerLevel; //experimental
+						bool normalParentFixedTargetProfitReached = noSessionDatesOrFollowParent && (withTargetProfitReached && IsOutsideRSI);
+						*/
+
 						bool normalParentFixedTargetProfitReached = noSessionDatesOrFollowParent && withTargetProfitReached;
 						bool normalParentFixedStopLossReached = noSessionDatesOrFollowParent && withStopLossReached;
-						bool sessionFixedTargetProfit = tmBot.config.SessionDates.Enabled && ParsedSessionDates.Count > 0 && ParsedSessionDates.First().Target.TargetType == enSessionTargetType.FixedTargetProfit;
-						bool withSessionTargetProfitReached = ParsedSessionDates.First().Target.EnableTargetProfit && CurrentProfit > ParsedSessionDates.First().Target.FixedTargetProfit;
+						bool sessionFixedTargetProfit = UseSessionDates && CurrentSessionDate != null && CurrentSessionDate.Target.TargetType == enSessionTargetType.FixedTargetProfit;
+						bool withSessionTargetProfitReached = UseSessionDates && CurrentSessionDate != null && CurrentSessionDate.Target.EnableTargetProfit && CurrentProfit > CurrentSessionDate.Target.FixedTargetProfit;
 						bool sessionDatesTargetProfitReached = !noSessionDatesOrFollowParent && sessionFixedTargetProfit && withSessionTargetProfitReached;
-						bool withSessionStopLossReached = ParsedSessionDates.First().Target.EnableStopLoss && CurrentProfit < tmBot.config.Target.FixedStopLoss;
+						bool withSessionStopLossReached = CurrentSessionDate != null && CurrentSessionDate.Target.EnableStopLoss && CurrentProfit < tmBot.config.Target.FixedStopLoss;
 						bool sessionDatesStopLossReached = !noSessionDatesOrFollowParent && sessionFixedTargetProfit && withSessionStopLossReached;
 
 						if (normalParentFixedTargetProfitReached)
 						{
-							tmBot.Print("Profit at {0}.", CurrentProfit.ToString("#0.00"));
+							tmBot.Print("Recorded Profit at {0}.", CurrentProfit.ToString("#0.00"));
 						}
 						if (sessionDatesTargetProfitReached)
 						{
-							tmBot.Print("Profit at {0} (from session date).", CurrentProfit.ToString("#0.00"));
+							tmBot.Print("Recorded Profit at {0} (from session date).", CurrentProfit.ToString("#0.00"));
 						}
 						if (normalParentFixedStopLossReached)
 						{
-							tmBot.Print("Cut Loss at {0}.", CurrentProfit.ToString("#0.00"));
+							tmBot.Print("Recorded Loss at {0}.", CurrentProfit.ToString("#0.00"));
 						}
 						if (sessionDatesStopLossReached)
 						{
-							tmBot.Print("Cut Loss at {0} (from session date).", CurrentProfit.ToString("#0.00"));
+							tmBot.Print("Recorded Loss at {0} (from session date).", CurrentProfit.ToString("#0.00"));
 						}
 
-						profit = (normalParentFixedTargetProfitReached || sessionDatesTargetProfitReached || normalParentFixedStopLossReached || sessionDatesStopLossReached) && TunnelStatus == enTunnelStatus.Running;
+						profit = (normalParentFixedTargetProfitReached || sessionDatesTargetProfitReached || normalParentFixedStopLossReached || sessionDatesStopLossReached || endofIntervalSession);
+
+						if (profit && endofIntervalSession)
+						{
+							tmBot.Print("Interval session ended with recorded Profit at {0}.", CurrentProfit.ToString("#0.00"));
+						}
 					}
-					return profit;
 				}
-				else
-					return false;
+
+				return profit;
 			}
 		}
 
@@ -370,13 +419,13 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 							if (posResult.IsSuccessful)
 							{
 								NetLossBucket += posResult.Position.NetProfit;
-								tmBot.Print("Net Loss Bucket: {0:#0.00}", NetLossBucket);
+								tmBot.Print("Net Loss Bucket: {0:#,##0.00}.", NetLossBucket);
 
 								LastVolume = posResult.Position.VolumeInUnits;
 
 								if (tmBot.config.RunningCycleMethod == enRunningCycleMethod.MartingaleSmartBucket)
 								{
-									LastVolume = LastVolume * tmBot.config.LotMultiplier;
+									LastVolume = tmBot.Symbol.NormalizeVolumeInUnits(LastVolume * tmBot.config.LotMultiplier);
 								}
 
 								tmBot.PlaceStopOrderAsync(posResult.Position.TradeType,
@@ -394,22 +443,101 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 
 		internal void EndTunnel()
 		{
-			if (TunnelStatus == enTunnelStatus.Running)
+			if (TunnelStatus != enTunnelStatus.Inactive)
 			{
-				foreach (var tp in tmBot.Positions.OrderByDescending(x => x.NetProfit))
+				//Positions closing
+				if (tmPositions.Count().IsZero())
 				{
-					tmBot.ClosePosition(tp);
+					tmBot.Print("No position to close.");
+					if (NetLossBucket.IsNegative())
+					{
+						tmBot.Print("Net Loss Bucket: {0:#,##0.00} will be brought over to the next session date.", NetLossBucket);
+					}
 				}
-				foreach (var to in tmBot.PendingOrders)
+				else
 				{
-					tmBot.CancelPendingOrder(to);
-				}
-				TunnelChartObjects.RemoveAll(tmBot);
-			}
-			NetLossBucket = 0;
-			LastVolume = tmBot.LotToVolume(tmBot.config.StartingLotSize);
+					var closingPosIDs = new List<int>();//to feed stuff so that the code below can only execute after all been closed
+					closingPosIDs.AddRange(PositionsToClose.Select(x => x.Id));
 
-			if (TunnelStatus != enTunnelStatus.Inactive) TunnelStatus = enTunnelStatus.Inactive;
+
+					foreach (var tp in PositionsToClose)
+					{
+						//tmBot.ClosePositionAsync(tp, AfterEndTunnelPosition);
+						tmBot.ClosePositionAsync(tp, poscloseResult =>
+						{
+							if (poscloseResult.IsSuccessful)
+							{
+								closingPosIDs.RemoveAll(x => x == poscloseResult.Position.Id);
+
+								ActualProfit += poscloseResult.Position.NetProfit;
+
+								tmBot.Print("Temporary Actual Profit: {0:#,##0.00}.", ActualProfit);
+
+								if (closingPosIDs.Count.IsZero()) //when there's no more position on the line
+								{
+									tmBot.Print("No more positions, Final Actual Profit: {0:#,##0.00}.", ActualProfit);
+
+									if (UsesAnySmartBucket)
+									{
+										if (IsSmartBucketAcrossCycle && ActualProfit.IsNegative())
+										{
+											NetLossBucket = ActualProfit;
+											tmBot.Print("Net Loss Bucket: {0:#,##0.00} will be brought over to the next session date.", NetLossBucket);
+										}
+										else
+										{
+											NetLossBucket = 0;
+											tmBot.Print("Net Loss Bucket resets to zero (0).");
+										}
+									}
+
+									ActualProfit = 0; //reset the Actual Profit
+								}
+							}
+						});
+						//tmBot.ClosePosition(tp);
+					}
+				}
+
+				//Pending Orders closing
+				if (tmBot.PendingOrders.Count.IsZero())
+				{
+					tmBot.Print("No pending order to close.");
+					//in case no pending orders, things must be reset first.
+					tmBot.Print("Removing chart objects, set the initial volume back, and set tunnel to inactive, then re-initialize.");
+					TunnelChartObjects.RemoveAll(tmBot);
+					LastVolume = tmBot.LotToVolume(StartingLotSize);
+					if (TunnelStatus != enTunnelStatus.Inactive) TunnelStatus = enTunnelStatus.Inactive;
+					Initialize();
+				}
+				else
+				{
+					var closingPendOrderIDs = new List<int>();//to feed stuff so that the code below can only execute after all been closed
+					closingPendOrderIDs.AddRange(tmBot.PendingOrders.Select(x => x.Id));
+
+					foreach (var to in tmBot.PendingOrders)
+					{
+						//tmBot.CancelPendingOrderAsync(to, AfterEndTunnelPendingOrder);
+						tmBot.CancelPendingOrderAsync(to, orderCloseResult =>
+						{
+							if (orderCloseResult.IsSuccessful)
+							{
+								closingPendOrderIDs.RemoveAll(x => x == orderCloseResult.PendingOrder.Id);
+
+								if (closingPendOrderIDs.Count.IsZero()) //when there's no more position on the line
+								{
+									tmBot.Print("Removing chart objects, set the initial volume back, and set tunnel to inactive, then re-initialize.");
+									TunnelChartObjects.RemoveAll(tmBot);
+									LastVolume = tmBot.LotToVolume(StartingLotSize);
+									if (TunnelStatus != enTunnelStatus.Inactive) TunnelStatus = enTunnelStatus.Inactive;
+									Initialize();
+								}
+							}
+						});
+						//tmBot.CancelPendingOrder(to);
+					}
+				}
+			}
 		}
 
 		internal void EndSessions()
@@ -421,28 +549,117 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 			}
 		}
 
+
+		internal int BollingerBandsDistance
+		{
+			get
+			{
+				return tmBot.DistanceInPips(bb.Top.LastValue, bb.Bottom.LastValue, true);
+			}
+		}
+
+		internal int TunnelHeight
+		{
+			get
+			{
+				switch (tmBot.config.TunnelHeightMode)
+				{
+					case enTunnelHeightMode.Fixed:
+						return tmBot.config.TunnelHeight;
+					case enTunnelHeightMode.BollingerBandsDistance:
+						return BollingerBandsDistance;
+				}
+				return 0;
+			}
+		}
+
+		internal double StartingLotSize
+		{
+			get
+			{
+				switch (tmBot.config.StartingLotSizeType)
+				{
+					case enStartingLotSizeType.Fixed:
+						return tmBot.config.StartingLotSize;
+					case enStartingLotSizeType.BalancePercentage:
+						return tmBot.Account.Balance * StartingLotSizeBalancePercentage;
+					default:
+						return tmBot.config.StartingLotSize;
+				}
+			}
+		}
+
+		internal double StartingLotSizeBalancePercentage
+		{
+			get
+			{
+				if (tmBot.config.StartingLotSize > 1) return 1;
+				else if (tmBot.config.StartingLotSize < 0) return 0;
+				else return tmBot.config.StartingLotSize;
+			}
+		}
+
 		internal string PositionSessionNumber
 		{
 			get
 			{
 				if (tmBot.config.SessionDates.Enabled)
 				{
-					return "-S" + SessionNumber.ToString("#000");
+					return TMLabelSeparator + "S" + SessionNumber.ToString("#000");
 				}
 				return string.Empty;
 			}
 		}
 
-		internal string GetPositionIndexNumber(int offset = 1)
+		internal bool UseSessionDates
 		{
-			return "-I" + (tmBot.Positions.Count + offset).ToString("#000");
+			get
+			{
+				return tmBot.config.SessionDates.Enabled && ParsedSessionDates.Count > 0;
+			}
 		}
 
+		internal string GetPositionIndexNumber(int offset = 1)
+		{
+			return TMLabelSeparator + "I" + (tmPositions.Count() + offset).ToString("#000");
+		}
+
+		internal IEnumerable<Position> tmPositions
+		{
+			get
+			{
+				return tmBot.Positions.Where(x => x.Label.StartsWith(TMLabel + TMLabelSeparator));
+			}
+		}
 		internal IEnumerable<Position> OrderedPositions
 		{
 			get
 			{
-				return tmBot.Positions.OrderBy(x => x.Label);
+				return tmPositions.OrderBy(x => x.Label);
+			}
+		}
+
+		internal IEnumerable<Position> PositionsToClose
+		{
+			get
+			{
+				return tmPositions.OrderBy(x => x.NetProfit);
+			}
+		}
+
+		internal bool IsTrapTime
+		{
+			get
+			{
+				return tmBot.config.Trap.TrapEntryMethod == enTrapEntryMethod.Normal || (tmBot.config.Trap.TrapEntryMethod == enTrapEntryMethod.BollingerBandsDistance && tmBot.config.Trap.IsTrapEntryTime(BollingerBandsDistance));
+			}
+		}
+
+		internal bool IsWithinCurrentSessionTime
+		{
+			get
+			{
+				return tmBot.TimeInUtc >= CurrentSessionDate.ActualStartDate.ToUniversalTime() && tmBot.TimeInUtc <= CurrentSessionDate.ActualStartDate.ToUniversalTime().Add(tmBot.config.SessionDates.Interval);
 			}
 		}
 
@@ -462,22 +679,45 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 		{
 			get
 			{
-				if (tmBot.config.RunningCycleMethod == enRunningCycleMethod.MartingaleSmartBucket || tmBot.config.RunningCycleMethod == enRunningCycleMethod.NormalSmartBucket)
+				if (UsesAnySmartBucket)
 				{
-					return tmBot.Positions.Select(x => x.NetProfit).Sum() + NetLossBucket; //reduced by NetLossBucket.
+					return tmPositions.Select(x => x.NetProfit).Sum() + NetLossBucket; //reduced by NetLossBucket.
 				}
 				else
 				{
-					return tmBot.Positions.Select(x => x.NetProfit).Sum();
+					return tmPositions.Select(x => x.NetProfit).Sum();
 				}
+			}
+		}
+		internal bool UsesAnySmartBucket
+		{
+			get
+			{
+				return tmBot.config.RunningCycleMethod == enRunningCycleMethod.MartingaleSmartBucket || tmBot.config.RunningCycleMethod == enRunningCycleMethod.NormalSmartBucket;
+			}
+		}
+
+		internal bool IsSmartBucketAcrossCycle
+		{
+			get
+			{
+				return UsesAnySmartBucket && (tmBot.config.SmartBucketModel == enSmartBucketModel.All || tmBot.config.SmartBucketModel == enSmartBucketModel.AcrossCycleOnly);
+			}
+		}
+
+		internal bool IsSmartBucketInCycle
+		{
+			get
+			{
+				return UsesAnySmartBucket && (tmBot.config.SmartBucketModel == enSmartBucketModel.All || tmBot.config.SmartBucketModel == enSmartBucketModel.InCycleOnly);
 			}
 		}
 
 		internal double WhatIfProfit()
 		{
-			bool sessionDatesFollowParent = tmBot.config.SessionDates.Enabled && ParsedSessionDates.Count > 0 && ParsedSessionDates.First().Target.TargetType == enSessionTargetType.FollowParent;
+			bool sessionDatesFollowParent = tmBot.config.SessionDates.Enabled && ParsedSessionDates.Count > 0 && CurrentSessionDate.Target.TargetType == enSessionTargetType.FollowParent;
 			bool noSessionDatesOrFollowParent = !tmBot.config.SessionDates.Enabled || sessionDatesFollowParent;
-			bool sessionDatesTarget = tmBot.config.SessionDates.Enabled && ParsedSessionDates.Count > 0 && ParsedSessionDates.First().Target.TargetType == enSessionTargetType.FixedTargetProfit;
+			bool sessionDatesTarget = tmBot.config.SessionDates.Enabled && ParsedSessionDates.Count > 0 && CurrentSessionDate.Target.TargetType == enSessionTargetType.FixedTargetProfit;
 
 			double TargetWhatIfProfit = 0;
 
@@ -489,10 +729,10 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 				}
 				else if (sessionDatesTarget)
 				{
-					TargetWhatIfProfit = ParsedSessionDates.First().Target.FixedTargetProfit;
+					TargetWhatIfProfit = CurrentSessionDate.Target.FixedTargetProfit;
 				}
 
-				if (tmBot.config.RunningCycleMethod == enRunningCycleMethod.MartingaleSmartBucket || tmBot.config.RunningCycleMethod == enRunningCycleMethod.NormalSmartBucket)
+				if (UsesAnySmartBucket)
 				{
 					return TargetWhatIfProfit - NetLossBucket; //added with NetLossBucket.
 				}
@@ -524,11 +764,13 @@ namespace Rdz.cBot.TunnelMartingale.Schemas
 		internal double BreakEven { get; set; }
 		internal double NetLossBucket { get; set; }
 		internal TradeType LastTradeType { get; set; }
-		internal List<SessionInfo> ParsedSessionDates { get; set; }
+		internal List<TradeSession> ParsedSessionDates { get; set; }
+		internal TradeSession CurrentSessionDate { get; set; }
 		internal int SessionNumber { get; set; }
 		internal enTunnelStatus TunnelStatus { get; private set; }
 
 		internal double LastVolume { get; set; }
+		internal double ActualProfit { get; set; }
 
 
 		internal TunnelStatistics Statistics { get; private set; }

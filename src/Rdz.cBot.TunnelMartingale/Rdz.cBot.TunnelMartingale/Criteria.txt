@@ -1,0 +1,19 @@
+﻿- High impact news
+	- Unemployement Claims
+	- Flash Manufacturing PMI
+	- FED Announcement (Red one) - this also imposes better movement over other red high-impact news nearby the time
+	- ADP Non-Farm Employment Change (careful, sometimes sideways)
+	- Non-Farm Employment Change & Unemployment Rate (15 minutes before, 20:15pm)
+	- CPI m/m & Core CPI m/m
+	- Retail Sales m/m & Core Retail Sales m/m
+	- German ifo Business Climate? maybe?
+	- Spanish Unemployment Rate
+	- Advance GDP q/q & Advance GDP Price Index q/q
+	- ISM Manufacturing PMI
+	- German Constitutional Court Ruling
+	- President Trump Speaks about economic after 14:00 to 22:00, no other stuff
+	- Surprisingly, Building Permits gains some movement
+	- ECB Press Conference
+	- one of the pair's holiday? maybe?
+	- Federal Funds Rate
+- if a lot of EUR high-impact news on 16:00, set the timer to 14:00 instead

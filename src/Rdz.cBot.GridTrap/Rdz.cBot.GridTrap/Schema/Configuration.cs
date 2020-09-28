@@ -12,7 +12,11 @@ namespace Rdz.cBot.GridTrap.Schema
 {
     public class Configuration : RdzConfiguration
     {
-
+		public Configuration()
+        {
+			Enabled = true;
+        }
+		public bool Enabled { get; set; }
         public EntryParameters EntryParameters { get; set; }
         public ClosureParameters ClosureParameters { get; set; }
         public GridParameters GridParameters { get; set; }

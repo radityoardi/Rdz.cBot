@@ -20,6 +20,13 @@ namespace Rdz.cBot.TunnelMartingale
 		NormalSmartBucket,
 		MartingaleSmartBucket
 	}
+
+	public enum enSmartBucketModel
+	{
+		InCycleOnly,
+		AcrossCycleOnly,
+		All
+	}
 	public enum enProfitCalculation
 	{
 		Normal,
@@ -28,7 +35,8 @@ namespace Rdz.cBot.TunnelMartingale
 	public enum enTunnelStatus
 	{
 		Inactive,
-		Pending,
+		PendingOrders,
+		PendingActivation,
 		Running
 	}
 	public enum enSymbolRetrieval
@@ -52,5 +60,29 @@ namespace Rdz.cBot.TunnelMartingale
 	{
 		ContinuousWithinDuration,
 		Limited
+	}
+
+	public enum enTunnelHeightMode
+	{
+		Fixed,
+		BollingerBandsDistance
+	}
+	public enum enTrapEntryMethod
+	{
+		Normal,
+		BollingerBandsDistance
+	}
+	public enum enCriteria
+	{
+		Equal,
+		LessThan,
+		GreaterThan,
+		LessThanOrEqual,
+		GreaterThanOrEqual
+	}
+	public enum enStartingLotSizeType
+	{
+		Fixed,
+		BalancePercentage
 	}
 }

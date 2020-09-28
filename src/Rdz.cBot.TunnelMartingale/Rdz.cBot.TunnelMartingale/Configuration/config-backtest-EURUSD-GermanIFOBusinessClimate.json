@@ -1,0 +1,94 @@
+{
+  "OpenCycleMethod": "Trap",
+  "RunningCycleMethod": "NormalSmartBucket",
+  "TunnelHeight": 250,
+  "StartingLotSize": 0.25,
+  "LotMultiplier": 3,
+  "SmartBucketModel": "AcrossCycleOnly",
+  "Target": {
+    "TargetType": "FixedTargetProfit",
+    "FixedTargetProfit": 25,
+    "EnableTargetProfit": true,
+    "EnableStopLoss": false,
+    "FixedStopLoss": -5
+  },
+  "CloseAllOrdersOnStop": true,
+  "LastDirectionTrailingHeight": 10,
+  "SessionDates": {
+    "Enabled": true,
+    "ParseFormat": "d MMM yyyy HH:mm:ss",
+    "Interval": "0.09:00:00",
+    "CloseAllOrdersWhenIntervalEnds": true,
+    "MaxCyclePerSession": 1,
+    "Sessions": [
+      {
+        "Date": "25 Jan 2019 17:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "22 Feb 2019 17:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "25 Mar 2019 17:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "24 Apr 2019 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "23 May 2019 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "24 Jun 2019 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "25 Jul 2019 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "26 Aug 2019 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "24 Sep 2019 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "25 Oct 2019 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "25 Nov 2019 17:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "18 Dec 2019 17:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "27 Jan 2020 17:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "24 Feb 2020 17:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "25 Mar 2020 17:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "24 Apr 2020 16:00:00",
+        "Enabled": true
+      },
+      {
+        "Date": "25 May 2020 16:00:00",
+        "Enabled": true
+      }
+    ]
+  }
+}

@@ -3,11 +3,13 @@ using cAlgo.API;
 using cAlgo.API.Internals;
 using cAlgo.API.Indicators;
 using cAlgo.Indicators;
+using Rdz.cBot.Library.Extensions;
 
-namespace Rdz.Indi.BollingerBandDistance
+
+namespace Rdz.Indi
 {
-	[Levels(50)]
-    [Indicator("Bollinger Bands Distance", IsOverlay = false, TimeZone = TimeZones.UTC, AutoRescale = true, ScalePrecision = 0, AccessRights = AccessRights.None)]
+	[Levels(50, -50)]
+    [Indicator(IsOverlay = false, TimeZone = TimeZones.UTC, AutoRescale = true, ScalePrecision = 0, AccessRights = AccessRights.None)]
     public class BollingerBandDistanceIndicator : Indicator
     {
         [Parameter("Source")]
@@ -32,7 +34,6 @@ namespace Rdz.Indi.BollingerBandDistance
         {
             // Initialize and create nested indicators
             bb = Indicators.BollingerBands(this.Source, this.Periods, this.StandardDeviations, this.MaType);
-			
         }
 
         public override void Calculate(int index)
@@ -41,9 +42,7 @@ namespace Rdz.Indi.BollingerBandDistance
 			// Result[index] = ...
 			if (bb.Top[index] != double.NaN && bb.Bottom[index] != double.NaN)
 			{
-				double distance = bb.Top[index] - bb.Bottom[index];
-				double dx = distance * Math.Pow(10, Symbol.Digits);
-				Result[index] = dx;
+                Result[index] = this.DistanceInPips(bb.Top[index], bb.Bottom[index]);
 			}
 
 		}

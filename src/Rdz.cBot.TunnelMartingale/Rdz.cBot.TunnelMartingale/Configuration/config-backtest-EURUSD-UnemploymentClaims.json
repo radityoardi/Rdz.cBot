@@ -1,0 +1,325 @@
+{
+	"OpenCycleMethod": "Trap",
+	"RunningCycleMethod": "NormalSmartBucket",
+	"TunnelHeight": 200,
+	"StartingLotSize": 0.70,
+	"LotMultiplier": 3,
+	"Trap": {
+		"Validity": "0.01:00:00"
+	},
+	"SmartBucketModel": "AcrossCycleOnly",
+	"Target": {
+		"TargetType": "FixedTargetProfit",
+		"FixedTargetProfit": 70,
+		"EnableTargetProfit": true,
+		"EnableStopLoss": false,
+		"FixedStopLoss": -5
+	},
+	"CloseAllOrdersOnStop": true,
+	"LastDirectionTrailingHeight": 10,
+	"SessionDates": {
+		"Enabled": true,
+		"ParseFormat": "d MMM yyyy HH:mm:ss",
+		"Interval": "0.09:00:00",
+		"CloseAllOrdersWhenIntervalEnds": true,
+		"MaxCyclePerSession": 1,
+		"Sessions": [
+			{
+				"Date": "03 Jan 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "10 Jan 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "17 Jan 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "24 Jan 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "31 Jan 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "07 Feb 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "14 Feb 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "21 Feb 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "28 Feb 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "07 Mar 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "07 Nov 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "14 Nov 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "21 Nov 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "27 Nov 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "05 Dec 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "12 Dec 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "19 Dec 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "26 Dec 2019 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "02 Jan 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "09 Jan 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "16 Jan 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "23 Jan 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "30 Jan 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "06 Feb 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "13 Feb 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "20 Feb 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "27 Feb 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "05 Mar 2020 21:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "14 Mar 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "21 Mar 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "28 Mar 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "04 Apr 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "11 Apr 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "18 Apr 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "25 Apr 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "02 May 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "09 May 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "16 May 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "23 May 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "30 May 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "06 Jun 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "13 Jun 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "20 Jun 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "27 Jun 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "03 Jul 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "11 Jul 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "18 Jul 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "25 Jul 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "01 Aug 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "08 Aug 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "15 Aug 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "22 Aug 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "29 Aug 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "05 Sep 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "12 Sep 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "19 Sep 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "26 Sep 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "03 Oct 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "10 Oct 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "17 Oct 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "24 Oct 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "31 Oct 2019 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "12 Mar 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "19 Mar 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "26 Mar 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "02 Apr 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "09 Apr 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "16 Apr 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "23 Apr 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "30 Apr 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "07 May 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "14 May 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "21 May 2020 20:30:00",
+				"Enabled": true
+			},
+			{
+				"Date": "28 May 2020 20:30:00",
+				"Enabled": true
+			}
+		]
+	}
+}

@@ -106,7 +106,7 @@ namespace Rdz.cBot.GridTrap
                 {
                     if (TextTotalNetProfit == null)
                     {
-                        TextTotalNetProfit = Chart.DrawText("TotalNetProfit", "Total Net Profit: " + RunInfo.TotalNetProfit.ToString("#0.00"), Bars.OpenTimes.LastValue, Bars.HighPrices.LastValue, Color.White);
+                        TextTotalNetProfit = Chart.DrawText("TotalNetProfit", "Total Net Profit: " + RunInfo.TotalNetProfit.ToString("#0.00"), Bars.OpenTimes.Last(), Bars.HighPrices.Last(), Color.White);
                     }
                     else
                     {
@@ -119,7 +119,7 @@ namespace Rdz.cBot.GridTrap
 			{
 				if (TextTotalNetProfit == null)
 				{
-					TextTotalNetProfit = Chart.DrawText("TotalNetProfit", "Total Net Profit: " + RunInfo.TotalNetProfit.ToString("#0.00"), Bars.OpenTimes.LastValue, Bars.HighPrices.LastValue, Color.White);
+					TextTotalNetProfit = Chart.DrawText("TotalNetProfit", "Total Net Profit: " + RunInfo.TotalNetProfit.ToString("#0.00"), Bars.OpenTimes.Last(), Bars.HighPrices.Last(), Color.White);
 				}
 				else
 				{

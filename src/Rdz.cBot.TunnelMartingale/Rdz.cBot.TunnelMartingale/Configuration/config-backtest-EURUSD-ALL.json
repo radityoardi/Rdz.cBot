@@ -1,20 +1,20 @@
 {
 	"OpenCycleMethod": "Trap",
 	"RunningCycleMethod": "Normal",
-	"TunnelHeight": 18,
-	"StartingLotSize": 0.0001,
+	"TunnelHeight": 20,
+	"StartingLotSize": 0.00003,
 	"StartingLotSizeType": "BalancePercentage",
-	"LotMultiplier": 3,
+	"LotMultiplier": 2,
 	"Trap": {
 		"Validity": "0.01:00:00",
 		"TrapEntryMethod": "BollingerBandsDistance",
 		"BollingerBandsDistanceCriteria": "LessThanOrEqual",
-		"BollingerBandsDistance": 15
+		"BollingerBandsDistance": 7
 	},
-	"SmartBucketModel": "AcrossCycleOnly",
+	"SmartBucketModel": "InCycleOnly",
 	"Target": {
 		"TargetType": "FixedTargetProfit",
-		"FixedTargetProfit": 70,
+		"FixedTargetProfit": 20,
 		"EnableTargetProfit": true,
 		"EnableStopLoss": false,
 		"FixedStopLoss": -5

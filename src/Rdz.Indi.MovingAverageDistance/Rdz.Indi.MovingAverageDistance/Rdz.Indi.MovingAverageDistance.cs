@@ -34,6 +34,9 @@ namespace Rdz.Indi
         public int PeriodsB { get; set; }
         #endregion
 
+        [Parameter("Distance Display", Group = "Display", DefaultValue = enDistanceType.Pips)]
+        public enDistanceType DistanceDisplay { get; set; }
+
         [Output("Main", LineColor = "#008000", IsHistogram = true, PlotType = PlotType.Histogram)]
         public IndicatorDataSeries Result { get; set; }
 
@@ -50,7 +53,23 @@ namespace Rdz.Indi
 
         public override void Calculate(int index)
         {
-            Result[index] = this.Distance(MovingAverageA.Result[index], MovingAverageB.Result[index]);
+            switch (DistanceDisplay)
+            {
+                case enDistanceType.Pips:
+                    Result[index] = this.DistanceInPips(MovingAverageA.Result[index], MovingAverageB.Result[index]);
+                    break;
+                case enDistanceType.Points:
+                    Result[index] = this.Distance(MovingAverageA.Result[index], MovingAverageB.Result[index]);
+                    break;
+                default:
+                    break;
+            }
         }
+    }
+
+    public enum enDistanceType
+    {
+        Pips,
+        Points
     }
 }

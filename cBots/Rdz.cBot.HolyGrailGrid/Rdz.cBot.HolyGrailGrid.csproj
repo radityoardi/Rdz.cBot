@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="cTrader.Automate" Version="1.*" />
+    <PackageReference Include="Rdz.cTrader.Library" Version="1.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Indicators\Rdz.cIndi.BBDistances\Rdz.cIndi.BBDistances.csproj" />
+  </ItemGroup>
+</Project>

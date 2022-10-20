@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Rdz.cIndi.BBDistances\**" />
+    <EmbeddedResource Remove="Rdz.cIndi.BBDistances\**" />
+    <None Remove="Rdz.cIndi.BBDistances\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="cTrader.Automate" Version="1.*" />
+    <PackageReference Include="Rdz.cTrader.Library" Version="1.0.2" />
+  </ItemGroup>
+</Project>

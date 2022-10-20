@@ -1,0 +1,18 @@
+﻿[ChartParameters]
+Symbol = AUDNZD
+Timeframe = h1
+
+[cBotParameters]
+LotSize = 0.01
+gridType = 0
+gridInterval = 50
+PreorderZone = 80
+marginDistance = 3
+gridCalculationMode = 0
+anchorPrice = 0
+enableSmartStopLoss = True
+smartStopLossDistance = 120
+smartSLMaxDurationText = 12:00:00
+AllowedLossPercentage = 100
+VisualAid = True
+PrintLogs = False

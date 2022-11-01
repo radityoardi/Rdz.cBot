@@ -46,6 +46,23 @@ namespace Rdz.cBot
 				return Symbol.LotToVolume(LotSize);
 			}
 		}
+
+		private double? InitialTakeProfitPips
+		{
+			get
+			{
+				return takeProfitMode == enTakeProfitMode.StandardTakeProfit ? gridInterval * InitialTakeProfitThreshold : null;
+			}
+		}
+		private double? InitialStopLossPips
+		{
+			get
+			{
+				return takeProfitMode == enTakeProfitMode.StandardTakeProfit ? null : gridInterval * InitialStopLossThreshold;
+			}
+		}
+
+
 		#endregion
 
 		#region Basic methods
@@ -124,10 +141,11 @@ namespace Rdz.cBot
 						if (tradeType == TradeType.Buy)
 						{
 							var _gl = new GridLine(Upper);
-							PlaceStopOrderAsync(TradeType.Buy, Symbol.Name, Volume, Upper, _gl.ShortID, null, gridInterval, (TradeResult result) => {
+							Grid.Add(_gl);
+							PlaceStopOrderAsync(TradeType.Buy, Symbol.Name, Volume, Upper, _gl.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+							{
 								_gl.PendingOrder = result.PendingOrder;
 								if (VisualAid) _gl.ShowText(Chart, Color.LawnGreen);
-								Grid.Add(_gl);
 								if (PrintLogs) Print($"EXPAND: {result.PendingOrder.TradeType} of {LotSize} at {Upper}");
 							});
 						}
@@ -135,10 +153,11 @@ namespace Rdz.cBot
 						if (tradeType == TradeType.Sell)
 						{
 							var _gl = new GridLine(Upper);
-							PlaceLimitOrderAsync(TradeType.Sell, Symbol.Name, Volume, Upper, _gl.ShortID, null, gridInterval, (TradeResult result) => {
+							Grid.Add(_gl);
+							PlaceLimitOrderAsync(TradeType.Sell, Symbol.Name, Volume, Upper, _gl.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+							{
 								_gl.PendingOrder = result.PendingOrder;
 								if (VisualAid) _gl.ShowText(Chart, Color.Salmon);
-								Grid.Add(_gl);
 								if (PrintLogs) Print($"EXPAND: {result.PendingOrder.TradeType} of {LotSize} at {Upper}");
 							});
 						}
@@ -156,10 +175,11 @@ namespace Rdz.cBot
 						if (tradeType == TradeType.Buy)
 						{
 							var _gl = new GridLine(Lower);
-							PlaceLimitOrderAsync(TradeType.Buy, Symbol.Name, Volume, Lower, _gl.ShortID, null, gridInterval, (TradeResult result) => {
+							Grid.Add(_gl);
+							PlaceLimitOrderAsync(TradeType.Buy, Symbol.Name, Volume, Lower, _gl.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+							{
 								_gl.PendingOrder = result.PendingOrder;
 								if (VisualAid) _gl.ShowText(Chart, Color.LawnGreen);
-								Grid.Add(_gl);
 								if (PrintLogs) Print($"EXPAND: {result.PendingOrder.TradeType} of {LotSize} at {Lower}");
 							});
 						}
@@ -167,10 +187,11 @@ namespace Rdz.cBot
 						if (tradeType == TradeType.Sell)
 						{
 							var _gl = new GridLine(Lower);
-							PlaceStopOrderAsync(TradeType.Sell, Symbol.Name, Volume, Lower, _gl.ShortID, null, gridInterval, (TradeResult result) => {
+							Grid.Add(_gl);
+							PlaceStopOrderAsync(TradeType.Sell, Symbol.Name, Volume, Lower, _gl.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+							{
 								_gl.PendingOrder = result.PendingOrder;
 								if (VisualAid) _gl.ShowText(Chart, Color.Salmon);
-								Grid.Add(_gl);
 								if (PrintLogs) Print($"EXPAND: {result.PendingOrder.TradeType} of {LotSize} at {Lower}");
 							});
 						}
@@ -187,42 +208,90 @@ namespace Rdz.cBot
 			bool LossIncurred = false;
 			double TotalOpenLoss = 0;
 
+			//Buys and Sells treated differently/separated.
 			foreach (var tradeType in tradeTypes)
 			{
-				//find all grid of specific trade types that outside of stop loss line and age more than the smart stop loss duration
-				var StopLossGridLines = Grid.Where(x => !x.IsEmpty && x.GridTradeType == tradeType && (x.Price >= keyGrid.UpperStopLoss.Price || x.Price <= keyGrid.LowerStopLoss.Price) && ((x.IsFilled && Chart.Bars.LastBar.OpenTime - x.Position.EntryTime >= smartSLMaxDuration) || x.IsOrdered));
-				TotalOpenLoss = StopLossGridLines.Where(x => x.IsFilled).Select(x => x.Position.NetProfit).Sum();
-				var IsAllowedLossMeetThreshold = (Math.Abs(TotalOpenLoss) / ProfitAfterLastStopLoss) * 100 <= AllowedLossPercentage;
+				if (takeProfitMode == enTakeProfitMode.StandardTakeProfit)
+				{ //for standard take profit mode, stop loss will be handled here programmatically
+				  //find all grid of specific trade types that outside of stop loss line and age more than the smart stop loss duration
+					var StopLossGridLines = Grid.Where(x => !x.IsEmpty && x.GridTradeType == tradeType &&
+					(x.Price >= keyGrid.UpperStopLoss.Price || x.Price <= keyGrid.LowerStopLoss.Price) &&
+					((x.IsFilled && Chart.Bars.LastBar.OpenTime - x.Position.EntryTime >= smartSLMaxDuration) || x.IsOrdered)
+					);
+					TotalOpenLoss = StopLossGridLines.Where(x => x.IsFilled).Select(x => x.Position.NetProfit).Sum();
+					var IsAllowedLossMeetThreshold = (Math.Abs(TotalOpenLoss) / ProfitAfterLastStopLoss) * 100 <= AllowedLossPercentage;
 
-				if (IsAllowedLossMeetThreshold)
-				{
-					if (TotalOpenLoss < 0)
+					if (IsAllowedLossMeetThreshold)
 					{
-						if (PrintLogs) Print($"Total Open Loss: {TotalOpenLoss.ToString(MoneyFormat)} and Profit after last stop loss: {ProfitAfterLastStopLoss.ToString(MoneyFormat)}");
-						LossIncurred = true;
-					}
-					foreach (var slGridLine in StopLossGridLines)
-					{
-						if (slGridLine.IsFilled)
+						if (TotalOpenLoss < 0)
 						{
-							slGridLine.RemoveText(Chart);
-							slGridLine.RemoveLine(Chart);
-							slGridLine.ClosePosition();
-							IsExecutedOnce = true;
+							if (PrintLogs) Print($"Total Open Loss: {TotalOpenLoss.ToString(MoneyFormat)} and Profit after last stop loss: {ProfitAfterLastStopLoss.ToString(MoneyFormat)}");
+							LossIncurred = true;
 						}
-
-						if (slGridLine.IsOrdered)
+						foreach (var slGridLine in StopLossGridLines)
 						{
-							slGridLine.RemoveText(Chart);
-							slGridLine.RemoveLine(Chart);
-							slGridLine.CancelOrder();
-							IsExecutedOnce = true;
+							if (slGridLine.IsFilled)
+							{
+								slGridLine.RemoveText(Chart);
+								slGridLine.RemoveLine(Chart);
+								slGridLine.ClosePosition();
+								IsExecutedOnce = true;
+							}
+
+							if (slGridLine.IsOrdered)
+							{
+								slGridLine.RemoveText(Chart);
+								slGridLine.RemoveLine(Chart);
+								slGridLine.CancelOrder();
+								IsExecutedOnce = true;
+							}
 						}
 					}
 				}
+				else if (takeProfitMode == enTakeProfitMode.TrailingStopLoss)
+				{ //for trailing stop loss, stop loss will be updated here
+					var TrailingSLGridLines = Grid.Where(x => !x.IsEmpty && x.GridTradeType == tradeType &&
+					(x.Price >= keyGrid.UpperStopLoss.Price || x.Price <= keyGrid.LowerStopLoss.Price) && x.IsFilled
+					);
+
+					var UpperGridLines = TrailingSLGridLines.Where(x => x.Price >= keyGrid.UpperStopLoss.Price).OrderBy(x => x.Price);
+					var LowerGridLines = TrailingSLGridLines.Where(x => x.Price <= keyGrid.LowerStopLoss.Price).OrderByDescending(x => x.Price);
+
+					var UpperTrailingSL = UpperGridLines.Select(x => x.Price).DefaultIfEmpty(double.NaN).First();
+					var LowerTrailingSL = LowerGridLines.Select(x => x.Price).DefaultIfEmpty(double.NaN).First();
+
+					if (UpperTrailingSL != double.NaN)
+					{
+						foreach (var tslGridLine in UpperGridLines)
+						{
+							if (
+									(tslGridLine.Position.TradeType == TradeType.Buy && tslGridLine.Position.StopLoss < UpperTrailingSL) ||
+									(tslGridLine.Position.TradeType == TradeType.Sell && tslGridLine.Position.StopLoss > UpperTrailingSL)
+							)
+							{
+								tslGridLine.Position.ModifyStopLossPrice(UpperTrailingSL);
+							}
+						}
+					}
+
+					if (LowerTrailingSL != double.NaN)
+					{
+						foreach (var tslGridLine in LowerGridLines)
+						{
+							if (
+									(tslGridLine.Position.TradeType == TradeType.Buy && tslGridLine.Position.StopLoss < LowerTrailingSL) ||
+									(tslGridLine.Position.TradeType == TradeType.Sell && tslGridLine.Position.StopLoss > LowerTrailingSL)
+							)
+							{
+								tslGridLine.Position.ModifyStopLossPrice(LowerTrailingSL);
+							}
+						}
+					}
+
+				}
 			}
 
-			if (IsExecutedOnce && LossIncurred)
+			if (takeProfitMode == enTakeProfitMode.StandardTakeProfit && IsExecutedOnce && LossIncurred)
 			{
 				ProfitAfterLastStopLoss = 0;
 				icon = Chart.DrawIcon(LastStopLossIconName, ChartIconType.Diamond, Chart.BarsTotal, Chart.Bars.LastBar.Close, Color.LightPink);
@@ -263,10 +332,11 @@ namespace Rdz.cBot
 					if (gridType == enGridType.Both || gridType == enGridType.BuyOnly)
 					{
 						var _gl = new GridLine(Upper);
-						PlaceStopOrderAsync(TradeType.Buy, Symbol.Name, Volume, Upper, _gl.ShortID, null, gridInterval, (TradeResult result) => {
+						Grid.Add(_gl);
+						PlaceStopOrderAsync(TradeType.Buy, Symbol.Name, Volume, Upper, _gl.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+						{
 							_gl.PendingOrder = result.PendingOrder;
 							if (VisualAid) _gl.ShowText(Chart, Color.LawnGreen);
-							Grid.Add(_gl);
 							if (PrintLogs) Print($"{result.PendingOrder.TradeType} of {LotSize} at {Upper}");
 						});
 					}
@@ -274,10 +344,11 @@ namespace Rdz.cBot
 					if (gridType == enGridType.Both || gridType == enGridType.SellOnly)
 					{
 						var _gl = new GridLine(Upper);
-						PlaceLimitOrderAsync(TradeType.Sell, Symbol.Name, Volume, Upper, _gl.ShortID, null, gridInterval, (TradeResult result) => {
+						Grid.Add(_gl);
+						PlaceLimitOrderAsync(TradeType.Sell, Symbol.Name, Volume, Upper, _gl.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+						{
 							_gl.PendingOrder = result.PendingOrder;
 							if (VisualAid) _gl.ShowText(Chart, Color.Salmon);
-							Grid.Add(_gl);
 							if (PrintLogs) Print($"{result.PendingOrder.TradeType} of {LotSize} at {Upper}");
 						});
 					}
@@ -290,10 +361,11 @@ namespace Rdz.cBot
 					if (gridType == enGridType.Both || gridType == enGridType.BuyOnly)
 					{
 						var _gl = new GridLine(Lower);
-						PlaceLimitOrderAsync(TradeType.Buy, Symbol.Name, Volume, Lower, _gl.ShortID, null, gridInterval, (TradeResult result) => {
+						Grid.Add(_gl);
+						PlaceLimitOrderAsync(TradeType.Buy, Symbol.Name, Volume, Lower, _gl.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+						{
 							_gl.PendingOrder = result.PendingOrder;
 							if (VisualAid) _gl.ShowText(Chart, Color.LawnGreen);
-							Grid.Add(_gl);
 							if (PrintLogs) Print($"{result.PendingOrder.TradeType} of {LotSize} at {Upper}");
 						});
 					}
@@ -301,16 +373,18 @@ namespace Rdz.cBot
 					if (gridType == enGridType.Both || gridType == enGridType.SellOnly)
 					{
 						var _gl = new GridLine(Lower);
-						PlaceStopOrderAsync(TradeType.Sell, Symbol.Name, Volume, Lower, _gl.ShortID, null, gridInterval, (TradeResult result) => {
+						Grid.Add(_gl);
+						PlaceStopOrderAsync(TradeType.Sell, Symbol.Name, Volume, Lower, _gl.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+						{
 							_gl.PendingOrder = result.PendingOrder;
 							if (VisualAid) _gl.ShowText(Chart, Color.Salmon);
-							Grid.Add(_gl);
 							if (PrintLogs) Print($"{result.PendingOrder.TradeType} of {LotSize} at {Upper}");
 						});
 					}
 					Lower -= Gap;
 				}
-			} else
+			}
+			else
 			{
 				if (PrintLogs) Print($"The price is too near to the nearest grid of {Upper} and {Lower}. Please wait until it reaches or beyond {marginDistance} pips.");
 			}
@@ -324,28 +398,61 @@ namespace Rdz.cBot
 			var matchedGrid = Grid.FirstOrDefault(x => x.IsFilled && x.Position.Id == obj.Position.Id);
 			if (matchedGrid != null)
 			{
+				var IsStandardTakeProfit = obj.Reason == PositionCloseReason.TakeProfit && takeProfitMode == enTakeProfitMode.StandardTakeProfit;
+				var IsTrailingStopLoss = obj.Reason == PositionCloseReason.StopLoss && takeProfitMode == enTakeProfitMode.TrailingStopLoss;
+
+
+				var withinAskMarginDistance = Symbol.Distance(Symbol.Ask, matchedGrid.Price, true) >= marginDistance; //for later
+
+
 				//fill the previously closed object after Take Profit
-				if (obj.Reason == PositionCloseReason.TakeProfit)
+				if (IsStandardTakeProfit) ProfitAfterLastStopLoss += obj.Position.NetProfit;
+
+				if (obj.Position.TradeType == TradeType.Buy)
 				{
-					ProfitAfterLastStopLoss += obj.Position.NetProfit;
-
-					if (obj.Position.TradeType == TradeType.Buy)
+					if (IsStandardTakeProfit || (IsTrailingStopLoss && matchedGrid.Price < Symbol.Ask))
 					{
-						PlaceLimitOrderAsync(TradeType.Buy, Symbol.Name, Volume, matchedGrid.Price, matchedGrid.ShortID, null, gridInterval, (TradeResult result) => {
+						PlaceLimitOrderAsync(TradeType.Buy, Symbol.Name, Volume, matchedGrid.Price, matchedGrid.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+						{
 							matchedGrid.Clear();
 							matchedGrid.PendingOrder = result.PendingOrder;
+							if (VisualAid) matchedGrid.ShowText(Chart, Color.LawnGreen);
 							if (PrintLogs) Print($"FILL: {result.PendingOrder.TradeType} of {LotSize} at {matchedGrid.Price}");
 						});
 					}
-					else if (obj.Position.TradeType == TradeType.Sell)
+					else if (IsTrailingStopLoss && matchedGrid.Price > Symbol.Ask)
 					{
-						PlaceLimitOrderAsync(TradeType.Sell, Symbol.Name, Volume, matchedGrid.Price, matchedGrid.ShortID, null, gridInterval, (TradeResult result) => {
+						PlaceStopOrderAsync(TradeType.Buy, Symbol.Name, Volume, matchedGrid.Price, matchedGrid.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+						{
 							matchedGrid.Clear();
 							matchedGrid.PendingOrder = result.PendingOrder;
+							if (VisualAid) matchedGrid.ShowText(Chart, Color.LawnGreen);
 							if (PrintLogs) Print($"FILL: {result.PendingOrder.TradeType} of {LotSize} at {matchedGrid.Price}");
 						});
 					}
-
+				}
+				else if (obj.Position.TradeType == TradeType.Sell)
+				{
+					if (IsStandardTakeProfit || (IsTrailingStopLoss && matchedGrid.Price > Symbol.Ask))
+					{
+						PlaceLimitOrderAsync(TradeType.Sell, Symbol.Name, Volume, matchedGrid.Price, matchedGrid.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+						{
+							matchedGrid.Clear();
+							matchedGrid.PendingOrder = result.PendingOrder;
+							if (VisualAid) matchedGrid.ShowText(Chart, Color.Salmon);
+							if (PrintLogs) Print($"FILL: {result.PendingOrder.TradeType} of {LotSize} at {matchedGrid.Price}");
+						});
+					}
+					else if (IsTrailingStopLoss && matchedGrid.Price < Symbol.Ask)
+					{
+						PlaceStopOrderAsync(TradeType.Sell, Symbol.Name, Volume, matchedGrid.Price, matchedGrid.ShortID, InitialStopLossPips, InitialTakeProfitPips, (TradeResult result) =>
+						{
+							matchedGrid.Clear();
+							matchedGrid.PendingOrder = result.PendingOrder;
+							if (VisualAid) matchedGrid.ShowText(Chart, Color.Salmon);
+							if (PrintLogs) Print($"FILL: {result.PendingOrder.TradeType} of {LotSize} at {matchedGrid.Price}");
+						});
+					}
 				}
 			}
 		}
@@ -356,7 +463,7 @@ namespace Rdz.cBot
 			if (matchedGrid != null)
 			{
 				matchedGrid.Position = obj.Position;
-				matchedGrid.RefreshText(Chart, Color.WhiteSmoke);
+				matchedGrid.RefreshText(Chart, Color.Cyan);
 			}
 		}
 		#endregion

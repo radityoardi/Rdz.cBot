@@ -1,18 +1,22 @@
 ﻿[ChartParameters]
-Symbol = AUDCAD
+Symbol = AUDJPY
 Timeframe = h1
 
 [cBotParameters]
 LotSize = 0.01
 gridType = 0
-gridInterval = 25
-PreorderZone = 40
+gridInterval = 15
+PreorderZone = 25
 marginDistance = 3
 gridCalculationMode = 0
 anchorPrice = 0
+takeProfitMode = 0
 enableSmartStopLoss = True
 smartStopLossDistance = 60
+InitialTakeProfitThreshold = 1
 smartSLMaxDurationText = 12:00:00
 AllowedLossPercentage = 500
+InitialStopLossThreshold = 3
+TrailingStopLossThreshold = 1
 VisualAid = True
 PrintLogs = False

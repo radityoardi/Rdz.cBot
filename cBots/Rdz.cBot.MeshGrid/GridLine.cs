@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Rdz.cTrader.Library;
+using Rdz.cBot;
 
 namespace Rdz.cBot
 {
@@ -13,11 +14,24 @@ namespace Rdz.cBot
 		const string LineBaseName = "GridLine";
 		const string TextBaseName = "TextInfo";
 
+		private readonly Color buyColor = Color.Salmon;
+		private readonly Color sellColor = Color.LawnGreen;
+
+		public enum enStatus
+		{
+			Error = -1,
+			Ready = 0,
+			Pending = 1,
+			NoTradeAllowed = 100,
+		}
+
+
 		public GridLine(double price, Position position)
 		{
 			ID = Guid.NewGuid();
 			Price = price;
 			Position = position;
+			Status = enStatus.Pending;
 			LineGraphicsName = $"{LineBaseName}-{position.TradeType}-{Guid.NewGuid().ToString("D")}";
 			TextGraphicsName = $"{TextBaseName}-{position.TradeType}-{Guid.NewGuid().ToString("D")}";
 		}
@@ -26,6 +40,7 @@ namespace Rdz.cBot
 			ID = Guid.NewGuid();
 			Price = price;
 			PendingOrder = pendingOrder;
+			Status = enStatus.Pending;
 			LineGraphicsName = $"{LineBaseName}-{pendingOrder.TradeType}-{Guid.NewGuid().ToString("D")}";
 			TextGraphicsName = $"{TextBaseName}-{pendingOrder.TradeType}-{Guid.NewGuid().ToString("D")}";
 		}
@@ -33,6 +48,7 @@ namespace Rdz.cBot
 		{
 			ID = Guid.NewGuid();
 			Price = price;
+			Status = enStatus.Pending;
 			LineGraphicsName = $"{LineBaseName}-{Guid.NewGuid().ToString("D")}";
 			TextGraphicsName = $"{TextBaseName}-{Guid.NewGuid().ToString("D")}";
 		}
@@ -50,6 +66,7 @@ namespace Rdz.cBot
 		public PendingOrder PendingOrder { get; set; }
 		public string LineGraphicsName { get; private set; }
 		public string TextGraphicsName { get; private set; }
+		public enStatus Status { get; set; }
 
 		public ChartTrendLine Line { get; set; }
 		public ChartText Text { get; set; }
@@ -159,6 +176,19 @@ namespace Rdz.cBot
 		public void RemoveText(Chart chart)
 		{
 			chart.RemoveObject(TextGraphicsName);
+		}
+
+		public void UpdateAsyncOrderResult(TradeResult result, Chart chart, bool VisualAid)
+		{
+			if (result.IsSuccessful)
+			{
+				PendingOrder = result.PendingOrder;
+				Status = GridLine.enStatus.Ready;
+				if (VisualAid) ShowText(chart, result.PendingOrder.TradeType == TradeType.Buy ? buyColor : sellColor);
+			}
+			else
+				Status = GridLine.enStatus.Error;
+
 		}
 	}
 

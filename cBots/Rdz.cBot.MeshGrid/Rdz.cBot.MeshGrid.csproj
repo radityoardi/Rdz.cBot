@@ -3,9 +3,15 @@
     <TargetFramework>net6.0</TargetFramework>
     <PackageId>Rdz.cBot</PackageId>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Sets\**" />
+    <EmbeddedResource Remove="Sets\**" />
+    <None Remove="Sets\**" />
+  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="cTrader.Automate" Version="1.0.2" />
-    <PackageReference Include="Rdz.cTrader.Library" Version="1.0.4" />
+    <PackageReference Include="cTrader.Automate" Version="1.0.4" />
+    <PackageReference Include="Rdz.cTrader.Library" Version="1.1203.715.837" />
+    <PackageReference Include="Rdz.Net.Library" Version="1.1203.716.66" />
   </ItemGroup>
 </Project>

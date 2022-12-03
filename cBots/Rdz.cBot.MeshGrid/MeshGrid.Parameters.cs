@@ -16,11 +16,29 @@ namespace Rdz.cBot
 		const string GroupSmartStopLoss = "Smart Stop Loss";
 		const string GroupStandardTakeProfit = "Standard Take Profit";
 		const string GroupTrailingStopLoss = "Trailing Stop Loss";
+		const string GroupMA = "Moving Averages";
+		const string GroupBacktesting = "Backtesting";
+		const string GroupLabeling = "Labeling";
 		const string GroupOthers = "Others";
 
 		#region Parameters
 		[Parameter("Lot Size", Group = GroupCommon, DefaultValue = 0.01, MinValue = 0.01, MaxValue = 100000, Step = 0.01)]
 		public double LotSize { get; set; }
+
+		[Parameter("Source", Group = GroupMA)]
+		public DataSeries MASource { get; set; }
+
+		[Parameter("Type", Group = GroupMA, DefaultValue = MovingAverageType.Simple)]
+		public MovingAverageType MovingAverageType { get; set; }
+
+		[Parameter("MA Period (Fast)", Group = GroupMA, DefaultValue = 50, MinValue = 1, Step = 1)]
+		public int MAPeriodFast { get; set; }
+
+		[Parameter("MA Period (Slow)", Group = GroupMA, DefaultValue = 100, MinValue = 1, Step = 1)]
+		public int MAPeriodSlow { get; set; }
+
+		[Parameter("Min. Distance", Group = GroupMA, DefaultValue = 10, MinValue = 0, Step = 1)]
+		public int MAMinStrongDirection { get; set; }
 
 		[Parameter("Grid Type", Group = GroupGrid, DefaultValue = enGridType.Both)]
 		public enGridType gridType { get; set; }
@@ -31,6 +49,8 @@ namespace Rdz.cBot
 		[Parameter("Preorder Zone (pips)", Group = GroupGrid, DefaultValue = 50, MinValue = 0, Step = 1)]
 		public int PreorderZone { get; set; }
 
+		[Parameter("MA-Based Neutral Mode", Group = GroupGrid, DefaultValue = enMABasedNeutralMode.FillBoth)]
+		public enMABasedNeutralMode typeMABasedNeutralMode { get; set; }
 
 		[Parameter("Order Margin Distance (pips)", Group = GroupGrid, DefaultValue = 7, MinValue = 0, Step = 1)]
 		public int marginDistance { get; set; }
@@ -80,11 +100,20 @@ namespace Rdz.cBot
 		[Parameter("Trailing SL Threshold (lines)", Group = GroupTrailingStopLoss, DefaultValue = 1, MinValue = 0, Step = 0.5)]
 		public double TrailingStopLossThreshold { get; set; }
 
+		[Parameter("Auto Label", Group = GroupLabeling, DefaultValue = false)]
+		public bool AutoGenerateLabel { get; set; }
+
+		[Parameter("Label/ID", Group = GroupLabeling, DefaultValue = "MESHGRID-01")]
+		public string Label { get; set; }
+
 		[Parameter("Visual Aid", Group = GroupOthers, DefaultValue = true)]
 		public bool VisualAid { get; set; }
 
 		[Parameter("Print Logs", Group = GroupOthers, DefaultValue = false)]
 		public bool PrintLogs { get; set; }
+
+		[Parameter("Stop on Loss after (iteration)", Group = GroupBacktesting, DefaultValue = 0)]
+		public int StopOnLossIteration { get; set; }
 
 		#endregion
 	}
